@@ -306,13 +306,13 @@ function desenhar(docs) {
       check.setAttribute('aria-hidden', 'true');
       check.textContent = '✓';
       const texto = document.createElement('span');
-      texto.textContent = info.quantidadeTotal > 1 ? 'Todos doados' : 'Reservado';
+      texto.textContent = info.quantidadeTotal > 1 ? 'Todos presenteados' : 'Presenteado';
       selo.append(check, texto);
       midia.appendChild(selo);
     } else if (info.quantidadeTotal > 1) {
       const seloQtd = document.createElement('div');
       seloQtd.className = 'card__selo card__selo--qtd';
-      seloQtd.textContent = info.quantidadeDoada > 0 ? `Restam ${info.restante}` : `${info.quantidadeTotal} un`;
+      seloQtd.textContent = info.quantidadeDoada > 0 ? `Restam ${info.restante}` : `${info.quantidadeTotal}`;
       midia.appendChild(seloQtd);
     }
 
@@ -342,12 +342,12 @@ function desenhar(docs) {
       const textoQtd = document.createElement('p');
       textoQtd.className = 'card__meta-qtd-texto';
       if (reservado) {
-        textoQtd.textContent = `🎉 Meta de ${info.quantidadeTotal} unidades atingida!`;
+        textoQtd.textContent = '🎉 Todos presenteados!';
         textoQtd.classList.add('card__meta-qtd-texto--concluido');
       } else if (info.quantidadeDoada > 0) {
-        textoQtd.textContent = `📦 ${info.quantidadeDoada} de ${info.quantidadeTotal} doados (${info.restante} restante${info.restante !== 1 ? 's' : ''})`;
+        textoQtd.textContent = `📦 ${info.quantidadeDoada}/${info.quantidadeTotal} presenteados · restam ${info.restante}`;
       } else {
-        textoQtd.textContent = `📦 Necessário: ${info.quantidadeTotal} unidades`;
+        textoQtd.textContent = `📦 ${info.quantidadeTotal}`;
       }
 
       const trilho = document.createElement('div');
@@ -392,8 +392,8 @@ function desenhar(docs) {
       botao.setAttribute('aria-label', 'Presente indisponível: ' + p.nome);
     } else {
       botao.className += ' btn--principal btn--bloco';
-      botao.textContent = info.quantidadeTotal > 1 && info.quantidadeDoada > 0 ? 'Eu vou doar!' : 'Eu vou dar!';
-      botao.setAttribute('aria-label', 'Reservar: ' + p.nome);
+      botao.textContent = 'Eu vou presentear!';
+      botao.setAttribute('aria-label', 'Presentear: ' + p.nome);
       botao.addEventListener('click', () => abrirDialogReserva(d.id, p.nome, info, botao));
     }
 
@@ -416,7 +416,7 @@ function abrirDialogReserva(id, nomePresente, info, btnOrigem) {
   infoAtualPresente = info;
   botaoOrigem       = btnOrigem;
 
-  dialogTitulo.textContent  = 'Reservar: ' + nomePresente;
+  dialogTitulo.textContent  = 'Presentear: ' + nomePresente;
   inputReservaNome.value    = '';
   erroReserva.textContent   = '';
   btnReservaConfirmar.disabled = false;
@@ -425,13 +425,13 @@ function abrirDialogReserva(id, nomePresente, info, btnOrigem) {
 
   if (info && info.quantidadeTotal > 1) {
     dialogReservaInfo.hidden = false;
-    dialogReservaInfo.textContent = `📦 Meta: ${info.quantidadeTotal} unidades (${info.quantidadeDoada} doados · restam ${info.restante})`;
+    dialogReservaInfo.textContent = `📦 Meta: ${info.quantidadeTotal} (${info.quantidadeDoada} presenteados · restam ${info.restante})`;
 
     reservaCampoQtd.hidden = false;
     inputReservaQtd.min = '1';
     inputReservaQtd.max = String(info.restante);
     inputReservaQtd.value = '1';
-    reservaQtdAjuda.textContent = `Você pode doar de 1 a ${info.restante} ${info.restante > 1 ? 'unidades' : 'unidade'}.`;
+    reservaQtdAjuda.textContent = `Você pode escolher de 1 a ${info.restante}.`;
   } else {
     dialogReservaInfo.hidden = true;
     dialogReservaInfo.textContent = '';
@@ -487,7 +487,7 @@ btnReservaConfirmar.addEventListener('click', async () => {
   if (infoAtualPresente && infoAtualPresente.quantidadeTotal > 1) {
     qtdDoar = parseInt(inputReservaQtd.value, 10);
     if (isNaN(qtdDoar) || qtdDoar < 1) {
-      erroReserva.textContent = 'Informe uma quantidade válida para doar (mínimo 1).';
+      erroReserva.textContent = 'Informe uma quantidade válida (mínimo 1).';
       inputReservaQtd.focus();
       return;
     }
@@ -542,12 +542,12 @@ btnReservaConfirmar.addEventListener('click', async () => {
     fecharDialogReserva();
 
     if (resultado.ok) {
-      const msgQtd = resultado.qtd > 1 ? `${resultado.qtd} unidades reservadas` : 'Reservado';
+      const msgQtd = resultado.qtd > 1 ? `${resultado.qtd} presenteados` : 'Presente reservado';
       mostrarToast(`${msgQtd}! Obrigado, ${nomeNormalizado} 🩷`, 'sucesso');
     } else if (resultado.motivo === 'esgotado') {
       mostrarToast('Ops, esse presente acabou de ser totalmente reservado!', 'erro');
     } else if (resultado.motivo === 'insuficiente') {
-      mostrarToast(`Ops, só restam ${resultado.restante} unidades disponíveis para doar!`, 'erro');
+      mostrarToast(`Ops, só restam ${resultado.restante} disponíveis!`, 'erro');
     } else {
       mostrarToast('Ops, não foi possível concluir a reserva.', 'erro');
     }
