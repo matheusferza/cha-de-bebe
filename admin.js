@@ -9,13 +9,15 @@ import {
   deleteDoc,
   deleteField,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   updateDoc,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { auth, db } from './firebase.js';
-import { mostrarToast, abrirConfirmacao, urlHttpsSegura, nomeDaLoja, linkDeBuscador, prepararImagem } from './ui.js';
+import { mostrarToast, abrirConfirmacao, urlHttpsSegura, nomeDaLoja, linkDeBuscador, prepararImagem, obterInfoDoacoes } from './ui.js';
 
 // ─── Referências do DOM ───────────────────────────────────────────────────────
 const loginSecao  = document.getElementById('login');
@@ -23,11 +25,16 @@ const painelSecao = document.getElementById('painel');
 const formLogin   = document.getElementById('form-login');
 const erroLogin   = document.getElementById('erro-login');
 const btnSair     = document.getElementById('btn-sair');
-const formPresente = document.getElementById('form-presente');
-const listaAdmin  = document.getElementById('lista-admin');
-const erroForm    = document.getElementById('erro-form');
-const btnAdicionar = document.getElementById('btn-adicionar');
-// Novos elementos (Melhoria 1 e 2)
+const secaoCadastro    = document.getElementById('secao-cadastro');
+const btnAbrirCadastro = document.getElementById('btn-abrir-cadastro');
+const btnFecharForm    = document.getElementById('btn-fechar-form');
+const btnFabCadastro   = document.getElementById('btn-fab-cadastro');
+const formPresente     = document.getElementById('form-presente');
+const inputQuantidade  = document.getElementById('quantidadeTotal');
+const listaAdmin       = document.getElementById('lista-admin');
+const erroForm         = document.getElementById('erro-form');
+const btnAdicionar     = document.getElementById('btn-adicionar');
+
 const tituloFormPresente  = document.getElementById('titulo-form-presente');
 const btnCancelarEdicao   = document.getElementById('btn-cancelar-edicao');
 const avisoReserva        = document.getElementById('aviso-reserva');
@@ -108,6 +115,45 @@ btnRemoverFoto.addEventListener('click', () => {
   exibirPreviewFoto(null);
 });
 
+// ─── Helpers de abertura / fechamento da seção de cadastro ──────────────────
+function abrirSecaoCadastro(focarInput = true) {
+  secaoCadastro.hidden = false;
+  const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
+  if (focarInput) {
+    document.getElementById('nome').focus();
+  }
+}
+
+function fecharSecaoCadastro() {
+  sairModoEdicao();
+  secaoCadastro.hidden = true;
+}
+
+if (btnAbrirCadastro) {
+  btnAbrirCadastro.addEventListener('click', () => {
+    sairModoEdicao();
+    abrirSecaoCadastro(true);
+  });
+}
+
+if (btnFabCadastro) {
+  btnFabCadastro.addEventListener('click', () => {
+    if (secaoCadastro.hidden) {
+      sairModoEdicao();
+      abrirSecaoCadastro(true);
+    } else {
+      const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
+      document.getElementById('nome').focus();
+    }
+  });
+}
+
+if (btnFecharForm) {
+  btnFecharForm.addEventListener('click', () => fecharSecaoCadastro());
+}
+
 // ─── Helpers de modo de edição ────────────────────────────────────────────────
 function entrarModoEdicao(id, dados) {
   editandoId = id;
@@ -115,14 +161,18 @@ function entrarModoEdicao(id, dados) {
   btnAdicionar.textContent = 'Salvar alterações';
   btnCancelarEdicao.hidden = false;
 
+  abrirSecaoCadastro(false);
+
   // Preenche os campos
   document.getElementById('nome').value      = dados.nome || '';
+  inputQuantidade.value                      = Math.max(1, parseInt(dados.quantidadeTotal, 10) || 1);
   document.getElementById('descricao').value = dados.descricao || '';
   document.getElementById('linkLoja').value  = dados.linkLoja || '';
 
-  // Aviso se reservado
-  if (dados.reservadoPor) {
-    avisoReserva.textContent = 'Este presente está reservado por ' + dados.reservadoPor + '. Editar não remove a reserva.';
+  // Aviso se possui doações/reservas
+  const info = obterInfoDoacoes(dados);
+  if (info.doacoes.length > 0) {
+    avisoReserva.textContent = `Este presente possui doações (${info.quantidadeDoada} de ${info.quantidadeTotal} unidades). Editar não cancela as doações.`;
     avisoReserva.hidden = false;
   } else {
     avisoReserva.hidden = true;
@@ -151,7 +201,7 @@ function entrarModoEdicao(id, dados) {
 
   // Scroll suave até o formulário, respeitando prefers-reduced-motion
   const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  formPresente.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
+  secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
   document.getElementById('nome').focus();
 }
 
@@ -164,6 +214,7 @@ function sairModoEdicao() {
   avisoReserva.textContent = '';
   erroForm.textContent = '';
   formPresente.reset();
+  inputQuantidade.value = '1';
   imagemArquivo.value = '';
   erroFoto.textContent = '';
   fotoAtualDataUrl = null;
@@ -176,7 +227,7 @@ function sairModoEdicao() {
   }
 }
 
-btnCancelarEdicao.addEventListener('click', () => sairModoEdicao());
+btnCancelarEdicao.addEventListener('click', () => fecharSecaoCadastro());
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 formLogin.addEventListener('submit', async (e) => {
@@ -251,9 +302,10 @@ formPresente.addEventListener('submit', async (e) => {
   e.preventDefault();
   erroForm.textContent = '';
 
-  const nome         = document.getElementById('nome').value.trim();
-  const descricao    = document.getElementById('descricao').value.trim();
-  const linkLojaRaw  = document.getElementById('linkLoja').value.trim();
+  const nome            = document.getElementById('nome').value.trim();
+  const quantidadeTotal = Math.max(1, parseInt(inputQuantidade.value, 10) || 1);
+  const descricao       = document.getElementById('descricao').value.trim();
+  const linkLojaRaw     = document.getElementById('linkLoja').value.trim();
 
   // Validações comuns
   if (nome.length < 2 || nome.length > 80) {
@@ -283,7 +335,7 @@ formPresente.addEventListener('submit', async (e) => {
     btnCancelarEdicao.disabled = true;
 
     // Monta payload — NUNCA inclui reservadoPor nem reservadoEm; preserva campos legados intactos
-    const payload = { nome, descricao };
+    const payload = { nome, descricao, quantidadeTotal };
     payload.linkLoja = urlLoja ? urlLoja.href : deleteField();
 
     if (estadoFoto === 'nova') {
@@ -298,7 +350,7 @@ formPresente.addEventListener('submit', async (e) => {
     try {
       await updateDoc(doc(db, 'presentes', editandoId), payload);
       mostrarToast('Presente atualizado!', 'sucesso');
-      sairModoEdicao();
+      fecharSecaoCadastro();
     } catch (_erro) {
       mostrarToast('Não foi possível salvar. Tente novamente.', 'erro');
     } finally {
@@ -315,7 +367,9 @@ formPresente.addEventListener('submit', async (e) => {
 
   const dados = {
     nome,
+    quantidadeTotal,
     descricao,
+    doacoes: [],
     reservadoPor: null,
     reservadoEm: null,
   };
@@ -327,7 +381,7 @@ formPresente.addEventListener('submit', async (e) => {
   try {
     await addDoc(collection(db, 'presentes'), dados);
     formPresente.reset();
-    sairModoEdicao();
+    fecharSecaoCadastro();
     mostrarToast('Presente "' + nome + '" adicionado com sucesso!', 'sucesso');
   } catch (_erro) {
     mostrarToast('Não foi possível adicionar. Verifique se você está logado.', 'erro');
@@ -399,25 +453,44 @@ function escutarLista() {
           nome.appendChild(tag);
         }
 
+        const infoDoacoes = obterInfoDoacoes(p);
+
         // Selo de situação
         const selo = document.createElement('span');
-        if (p.reservadoPor) {
+        const icone = document.createElement('span');
+        icone.setAttribute('aria-hidden', 'true');
+        const texto = document.createElement('span');
+
+        if (infoDoacoes.reservado) {
           selo.className = 'selo selo--reservado';
-          const icone = document.createElement('span');
-          icone.setAttribute('aria-hidden', 'true');
           icone.textContent = '●';
-          const texto = document.createElement('span');
-          texto.textContent = 'Reservado por ' + p.reservadoPor;
-          selo.append(icone, texto);
+          texto.textContent = infoDoacoes.quantidadeTotal > 1
+            ? 'Totalmente doado'
+            : ('Reservado por ' + (infoDoacoes.doacoes[0]?.nome || p.reservadoPor || 'Convidado'));
+        } else if (infoDoacoes.quantidadeDoada > 0) {
+          selo.className = 'selo selo--reservado';
+          icone.textContent = '◐';
+          texto.textContent = `Parcial (${infoDoacoes.quantidadeDoada}/${infoDoacoes.quantidadeTotal} doados)`;
         } else {
           selo.className = 'selo selo--disponivel';
-          const icone = document.createElement('span');
-          icone.setAttribute('aria-hidden', 'true');
           icone.textContent = '✓';
-          const texto = document.createElement('span');
-          texto.textContent = 'Disponível';
-          selo.append(icone, texto);
+          texto.textContent = infoDoacoes.quantidadeTotal > 1
+            ? `Disponível (${infoDoacoes.quantidadeTotal} un)`
+            : 'Disponível';
         }
+        selo.append(icone, texto);
+
+        info.append(nome);
+
+        // Indicador de quantidade total
+        if (infoDoacoes.quantidadeTotal > 1) {
+          const qtdInfo = document.createElement('p');
+          qtdInfo.className = 'card-admin__qtd';
+          qtdInfo.textContent = `📦 Meta: ${infoDoacoes.quantidadeTotal} un · ${infoDoacoes.quantidadeDoada} doados · ${infoDoacoes.restante} restantes`;
+          info.appendChild(qtdInfo);
+        }
+
+        info.appendChild(selo);
 
         // Link da loja ou selo de aviso se for link de busca
         const urlLojaObj = p.linkLoja ? urlHttpsSegura(p.linkLoja) : null;
@@ -426,7 +499,7 @@ function escutarLista() {
             const avisoBusca = document.createElement('span');
             avisoBusca.className = 'selo selo--aviso-busca';
             avisoBusca.textContent = '⚠️ Link de busca: corrigir';
-            info.append(nome, selo, avisoBusca);
+            info.appendChild(avisoBusca);
           } else {
             const linkLoja = document.createElement('a');
             linkLoja.href = urlLojaObj.href;
@@ -439,10 +512,45 @@ function escutarLista() {
             srOnly.className = 'sr-only';
             srOnly.textContent = ' (abre em nova aba)';
             linkLoja.append(textoLink, srOnly);
-            info.append(nome, selo, linkLoja);
+            info.appendChild(linkLoja);
           }
-        } else {
-          info.append(nome, selo);
+        }
+
+        // Lista de quem vai doar e quantos
+        if (infoDoacoes.doacoes.length > 0) {
+          const boxDoacoes = document.createElement('div');
+          boxDoacoes.className = 'card-admin__doacoes';
+
+          const titDoacoes = document.createElement('p');
+          titDoacoes.className = 'card-admin__doacoes-titulo';
+          titDoacoes.textContent = `Doações confirmadas (${infoDoacoes.quantidadeDoada} ${infoDoacoes.quantidadeDoada !== 1 ? 'unidades' : 'unidade'}):`;
+
+          const ulDoacoes = document.createElement('ul');
+          ulDoacoes.className = 'card-admin__doacoes-lista';
+
+          infoDoacoes.doacoes.forEach((doacao) => {
+            const li = document.createElement('li');
+            li.className = 'card-admin__doacao-item';
+
+            const spanDoador = document.createElement('span');
+            spanDoador.textContent = `👤 ${doacao.nome}: ${doacao.quantidade} ${doacao.quantidade !== 1 ? 'unidades' : 'unidade'}`;
+
+            const btnLiberarIndividual = document.createElement('button');
+            btnLiberarIndividual.type = 'button';
+            btnLiberarIndividual.className = 'btn-liberar-doacao';
+            btnLiberarIndividual.textContent = '✕ Liberar';
+            btnLiberarIndividual.setAttribute('aria-label', `Liberar doação de ${doacao.nome}`);
+            btnLiberarIndividual.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              liberarDoacaoIndividual(d.id, doacao.id, doacao.nome, doacao.quantidade);
+            });
+
+            li.append(spanDoador, btnLiberarIndividual);
+            ulDoacoes.appendChild(li);
+          });
+
+          boxDoacoes.append(titDoacoes, ulDoacoes);
+          info.appendChild(boxDoacoes);
         }
 
         // ── Ações ──
@@ -457,7 +565,14 @@ function escutarLista() {
         btnEditar.addEventListener('click', () => entrarModoEdicao(d.id, p));
         acoes.appendChild(btnEditar);
 
-        if (p.reservadoPor) {
+        if (infoDoacoes.doacoes.length > 1) {
+          const btnLiberarTudo = document.createElement('button');
+          btnLiberarTudo.className = 'secundario';
+          btnLiberarTudo.textContent = 'Liberar Tudo';
+          btnLiberarTudo.setAttribute('aria-label', 'Liberar todas as reservas de ' + p.nome);
+          btnLiberarTudo.addEventListener('click', () => liberarReserva(d.id, p.nome, btnLiberarTudo));
+          acoes.appendChild(btnLiberarTudo);
+        } else if (infoDoacoes.doacoes.length === 1) {
           const btnLiberar = document.createElement('button');
           btnLiberar.className = 'secundario';
           btnLiberar.textContent = 'Liberar';
@@ -496,19 +611,63 @@ function escutarLista() {
   );
 }
 
-// ─── Liberar reserva ──────────────────────────────────────────────────────────
+// ─── Liberar doação individual ───────────────────────────────────────────────
+async function liberarDoacaoIndividual(idPresente, doacaoId, nomeDoador, quantidade) {
+  const confirmado = await abrirConfirmacao({
+    titulo: 'Liberar doação',
+    corpo: `Liberar a doação de ${quantidade} ${quantidade > 1 ? 'unidades' : 'unidade'} de "${nomeDoador}"? O item voltará a ter esse saldo disponível.`,
+    labelConfirmar: 'Liberar doação',
+    classeBotao: 'btn--principal',
+  });
+  if (!confirmado) return;
+
+  try {
+    const docRef = doc(db, 'presentes', idPresente);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) return;
+
+    const infoAtual = obterInfoDoacoes(snap.data());
+    const novasDoacoes = infoAtual.doacoes.filter((d) => d.id !== doacaoId);
+    const novaQtdDoada = novasDoacoes.reduce((acc, d) => acc + d.quantidade, 0);
+    const estaReservado = novaQtdDoada >= infoAtual.quantidadeTotal;
+
+    await updateDoc(docRef, {
+      doacoes: novasDoacoes,
+      reservadoPor: estaReservado ? (novasDoacoes.length === 1 ? novasDoacoes[0].nome : 'Múltiplos') : null,
+      reservadoEm: novasDoacoes.length > 0 ? serverTimestamp() : null,
+    });
+
+    mostrarToast(`Doação de "${nomeDoador}" liberada com sucesso!`, 'sucesso');
+  } catch (erro) {
+    console.error('Erro ao liberar doação:', erro);
+    mostrarToast('Não foi possível liberar a doação.', 'erro');
+  }
+}
+
+// ─── Liberar todas as reservas ───────────────────────────────────────────────
 async function liberarReserva(id, nome, btnOrigem) {
+  const confirmado = await abrirConfirmacao({
+    titulo: 'Liberar reservas',
+    corpo: `Deseja liberar todas as doações de "${nome}"? O presente voltará a ficar totalmente disponível.`,
+    labelConfirmar: 'Liberar tudo',
+    classeBotao: 'btn--principal',
+  });
+
+  if (!confirmado) return;
+
   btnOrigem.disabled = true;
   btnOrigem.textContent = 'Liberando...';
 
   try {
     await updateDoc(doc(db, 'presentes', id), {
+      doacoes: [],
       reservadoPor: null,
       reservadoEm: null,
     });
-    mostrarToast('Reserva de "' + nome + '" liberada.', 'sucesso');
+    mostrarToast('Reservas de "' + nome + '" liberadas.', 'sucesso');
   } catch (_erro) {
-    mostrarToast('Não foi possível liberar a reserva.', 'erro');
+    mostrarToast('Não foi possível liberar as reservas.', 'erro');
+  } finally {
     btnOrigem.disabled = false;
     btnOrigem.textContent = 'Liberar';
   }

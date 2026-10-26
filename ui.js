@@ -354,3 +354,52 @@ export async function prepararImagem(arquivo) {
 
   return dataUrl;
 }
+
+// ─── Helper de doações / quantidades de presentes ────────────────────────────
+/**
+ * Normaliza e calcula as informações de doações e disponibilidade de um presente.
+ * Compatível com o formato legado (reservadoPor string) e múltiplas doações.
+ * @param {object} [p] Dados do presente no Firestore
+ * @returns {{
+ *   quantidadeTotal: number,
+ *   doacoes: Array<{ id: string, nome: string, quantidade: number, data?: any }>,
+ *   quantidadeDoada: number,
+ *   restante: number,
+ *   reservado: boolean
+ * }}
+ */
+export function obterInfoDoacoes(p = {}) {
+  const quantidadeTotal = Math.max(1, parseInt(p.quantidadeTotal, 10) || 1);
+  let doacoes = [];
+
+  if (Array.isArray(p.doacoes)) {
+    doacoes = p.doacoes.map((d, idx) => ({
+      id: d.id || `doacao-${idx}-${d.nome || 'anon'}`,
+      nome: typeof d.nome === 'string' ? d.nome.trim() : 'Convidado',
+      quantidade: Math.max(1, parseInt(d.quantidade, 10) || 1),
+      data: d.data || null,
+    }));
+  } else if (p.reservadoPor) {
+    // Formato legado
+    doacoes = [
+      {
+        id: 'legado',
+        nome: String(p.reservadoPor).trim(),
+        quantidade: 1,
+        data: p.reservadoEm || null,
+      },
+    ];
+  }
+
+  const quantidadeDoada = doacoes.reduce((acc, d) => acc + d.quantidade, 0);
+  const restante = Math.max(0, quantidadeTotal - quantidadeDoada);
+  const reservado = restante === 0;
+
+  return {
+    quantidadeTotal,
+    doacoes,
+    quantidadeDoada,
+    restante,
+    reservado,
+  };
+}

@@ -8,7 +8,7 @@ import {
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { db } from './firebase.js';
-import { mostrarToast, urlHttpsSegura, nomeDaLoja, linkDeBuscador } from './ui.js';
+import { mostrarToast, urlHttpsSegura, nomeDaLoja, linkDeBuscador, obterInfoDoacoes } from './ui.js';
 
 // ─── Configuração do evento ────────────────────────────────────────────────────
 // Edite aqui para personalizar o evento. Campos vazios não aparecem.
@@ -35,6 +35,10 @@ const toggleDisponiveis = document.getElementById('toggle-disponiveis');
 
 const dialogReserva     = document.getElementById('dialog-reserva');
 const dialogTitulo      = document.getElementById('dialog-reserva-titulo');
+const dialogReservaInfo = document.getElementById('reserva-info');
+const reservaCampoQtd   = document.getElementById('reserva-campo-qtd');
+const inputReservaQtd   = document.getElementById('reserva-quantidade');
+const reservaQtdAjuda   = document.getElementById('reserva-qtd-ajuda');
 const inputReservaNome  = document.getElementById('reserva-nome');
 const erroReserva       = document.getElementById('reserva-erro');
 const btnReservaCancelar  = document.getElementById('reserva-cancelar');
@@ -169,13 +173,13 @@ function docsFiltradosOrdenados() {
   let lista = [...todosOsDocs];
 
   if (toggleDisponiveis.checked) {
-    lista = lista.filter((d) => !d.data().reservadoPor);
+    lista = lista.filter((d) => !obterInfoDoacoes(d.data()).reservado);
   }
 
   // Disponíveis primeiro, depois reservados; ambos em ordem alfabética
   lista.sort((a, b) => {
-    const rA = !!a.data().reservadoPor;
-    const rB = !!b.data().reservadoPor;
+    const rA = obterInfoDoacoes(a.data()).reservado;
+    const rB = obterInfoDoacoes(b.data()).reservado;
     if (rA !== rB) return rA ? 1 : -1;
     return a.data().nome.localeCompare(b.data().nome, 'pt-BR');
   });
@@ -188,7 +192,7 @@ toggleDisponiveis.addEventListener('change', () => desenhar(docsFiltradosOrdenad
 // ─── Atualiza barra de progresso ─────────────────────────────────────────────
 function atualizarProgresso(docs) {
   const total     = docs.length;
-  const reservados = docs.filter((d) => d.data().reservadoPor).length;
+  const reservados = docs.filter((d) => obterInfoDoacoes(d.data()).reservado).length;
   const pct       = total > 0 ? Math.round((reservados / total) * 100) : 0;
 
   progressoLabel.textContent = `${reservados} de ${total} presente${total !== 1 ? 's' : ''} já escolhido${reservados !== 1 ? 's' : ''}`;
@@ -226,7 +230,8 @@ function desenhar(docs) {
 
   docs.forEach((d) => {
     const p = d.data();
-    const reservado = !!p.reservadoPor;
+    const info = obterInfoDoacoes(p);
+    const reservado = info.reservado;
     const isNovo = !idsRendizados.has(d.id);
 
     const li = document.createElement('li');
@@ -292,7 +297,7 @@ function desenhar(docs) {
       midia.appendChild(emoji);
     }
 
-    // Selo "Reservado"
+    // Selo na mídia
     if (reservado) {
       const selo = document.createElement('div');
       selo.className = 'card__selo';
@@ -301,9 +306,14 @@ function desenhar(docs) {
       check.setAttribute('aria-hidden', 'true');
       check.textContent = '✓';
       const texto = document.createElement('span');
-      texto.textContent = 'Reservado';
+      texto.textContent = info.quantidadeTotal > 1 ? 'Todos doados' : 'Reservado';
       selo.append(check, texto);
       midia.appendChild(selo);
+    } else if (info.quantidadeTotal > 1) {
+      const seloQtd = document.createElement('div');
+      seloQtd.className = 'card__selo card__selo--qtd';
+      seloQtd.textContent = info.quantidadeDoada > 0 ? `Restam ${info.restante}` : `${info.quantidadeTotal} un`;
+      midia.appendChild(seloQtd);
     }
 
     // ── Corpo ──
@@ -324,6 +334,33 @@ function desenhar(docs) {
       corpo.append(titulo);
     }
 
+    // Progresso de quantidade (para itens com quantidade > 1)
+    if (info.quantidadeTotal > 1) {
+      const progQtd = document.createElement('div');
+      progQtd.className = 'card__meta-qtd';
+
+      const textoQtd = document.createElement('p');
+      textoQtd.className = 'card__meta-qtd-texto';
+      if (reservado) {
+        textoQtd.textContent = `🎉 Meta de ${info.quantidadeTotal} unidades atingida!`;
+        textoQtd.classList.add('card__meta-qtd-texto--concluido');
+      } else if (info.quantidadeDoada > 0) {
+        textoQtd.textContent = `📦 ${info.quantidadeDoada} de ${info.quantidadeTotal} doados (${info.restante} restante${info.restante !== 1 ? 's' : ''})`;
+      } else {
+        textoQtd.textContent = `📦 Necessário: ${info.quantidadeTotal} unidades`;
+      }
+
+      const trilho = document.createElement('div');
+      trilho.className = 'card__meta-qtd-trilho';
+      const barra = document.createElement('div');
+      barra.className = 'card__meta-qtd-barra';
+      const pctItem = Math.min(100, Math.round((info.quantidadeDoada / info.quantidadeTotal) * 100));
+      barra.style.width = `${pctItem}%`;
+      trilho.appendChild(barra);
+
+      progQtd.append(textoQtd, trilho);
+      corpo.appendChild(progQtd);
+    }
 
     // Link "Ver sugestão" (só em cartões disponíveis com linkLoja válido que NÃO seja buscador)
     if (!reservado && p.linkLoja) {
@@ -355,9 +392,9 @@ function desenhar(docs) {
       botao.setAttribute('aria-label', 'Presente indisponível: ' + p.nome);
     } else {
       botao.className += ' btn--principal btn--bloco';
-      botao.textContent = 'Eu vou dar!';
+      botao.textContent = info.quantidadeTotal > 1 && info.quantidadeDoada > 0 ? 'Eu vou doar!' : 'Eu vou dar!';
       botao.setAttribute('aria-label', 'Reservar: ' + p.nome);
-      botao.addEventListener('click', () => abrirDialogReserva(d.id, p.nome, botao));
+      botao.addEventListener('click', () => abrirDialogReserva(d.id, p.nome, info, botao));
     }
 
     corpo.appendChild(botao);
@@ -370,12 +407,14 @@ function desenhar(docs) {
 }
 
 // ─── Dialog de reserva ────────────────────────────────────────────────────────
-let idPresente     = null;
-let botaoOrigem    = null;
+let idPresente        = null;
+let infoAtualPresente = null;
+let botaoOrigem       = null;
 
-function abrirDialogReserva(id, nomePresente, btnOrigem) {
-  idPresente  = id;
-  botaoOrigem = btnOrigem;
+function abrirDialogReserva(id, nomePresente, info, btnOrigem) {
+  idPresente        = id;
+  infoAtualPresente = info;
+  botaoOrigem       = btnOrigem;
 
   dialogTitulo.textContent  = 'Reservar: ' + nomePresente;
   inputReservaNome.value    = '';
@@ -384,6 +423,23 @@ function abrirDialogReserva(id, nomePresente, btnOrigem) {
   btnReservaCancelar.disabled  = false;
   btnReservaConfirmar.textContent = 'Confirmar reserva';
 
+  if (info && info.quantidadeTotal > 1) {
+    dialogReservaInfo.hidden = false;
+    dialogReservaInfo.textContent = `📦 Meta: ${info.quantidadeTotal} unidades (${info.quantidadeDoada} doados · restam ${info.restante})`;
+
+    reservaCampoQtd.hidden = false;
+    inputReservaQtd.min = '1';
+    inputReservaQtd.max = String(info.restante);
+    inputReservaQtd.value = '1';
+    reservaQtdAjuda.textContent = `Você pode doar de 1 a ${info.restante} ${info.restante > 1 ? 'unidades' : 'unidade'}.`;
+  } else {
+    dialogReservaInfo.hidden = true;
+    dialogReservaInfo.textContent = '';
+    reservaCampoQtd.hidden = true;
+    inputReservaQtd.value = '1';
+    reservaQtdAjuda.textContent = '';
+  }
+
   dialogReserva.showModal();
   inputReservaNome.focus();
 }
@@ -391,8 +447,9 @@ function abrirDialogReserva(id, nomePresente, btnOrigem) {
 function fecharDialogReserva() {
   dialogReserva.close();
   if (botaoOrigem) botaoOrigem.focus();
-  botaoOrigem = null;
-  idPresente  = null;
+  botaoOrigem       = null;
+  idPresente        = null;
+  infoAtualPresente = null;
 }
 
 btnReservaCancelar.addEventListener('click', () => fecharDialogReserva());
@@ -405,14 +462,15 @@ dialogReserva.addEventListener('click', (e) => {
 // Fechar com ESC (nativo do <dialog>, mas devolvemos o foco)
 dialogReserva.addEventListener('cancel', () => {
   if (botaoOrigem) botaoOrigem.focus();
-  botaoOrigem = null;
-  idPresente  = null;
+  botaoOrigem       = null;
+  idPresente        = null;
+  infoAtualPresente = null;
 });
 
 btnReservaConfirmar.addEventListener('click', async () => {
   const nomeNormalizado = inputReservaNome.value.trim();
 
-  // Validação
+  // Validação do nome
   if (nomeNormalizado.length < 2) {
     erroReserva.textContent = 'Por favor, informe um nome com ao menos 2 caracteres.';
     inputReservaNome.focus();
@@ -424,6 +482,22 @@ btnReservaConfirmar.addEventListener('click', async () => {
     return;
   }
 
+  // Validação da quantidade
+  let qtdDoar = 1;
+  if (infoAtualPresente && infoAtualPresente.quantidadeTotal > 1) {
+    qtdDoar = parseInt(inputReservaQtd.value, 10);
+    if (isNaN(qtdDoar) || qtdDoar < 1) {
+      erroReserva.textContent = 'Informe uma quantidade válida para doar (mínimo 1).';
+      inputReservaQtd.focus();
+      return;
+    }
+    if (qtdDoar > infoAtualPresente.restante) {
+      erroReserva.textContent = `A quantidade não pode ser maior que o restante disponível (${infoAtualPresente.restante}).`;
+      inputReservaQtd.focus();
+      return;
+    }
+  }
+
   erroReserva.textContent = '';
   btnReservaConfirmar.disabled = true;
   btnReservaCancelar.disabled  = true;
@@ -432,23 +506,50 @@ btnReservaConfirmar.addEventListener('click', async () => {
   const ref = doc(db, 'presentes', idPresente);
 
   try {
-    const ok = await runTransaction(db, async (t) => {
+    const resultado = await runTransaction(db, async (t) => {
       const snap = await t.get(ref);
-      if (snap.data().reservadoPor !== null) return false;
+      if (!snap.exists()) return { ok: false, motivo: 'inexistente' };
+
+      const infoNoBanco = obterInfoDoacoes(snap.data());
+
+      if (infoNoBanco.restante <= 0) {
+        return { ok: false, motivo: 'esgotado' };
+      }
+      if (qtdDoar > infoNoBanco.restante) {
+        return { ok: false, motivo: 'insuficiente', restante: infoNoBanco.restante };
+      }
+
+      const novaDoacao = {
+        id: Date.now().toString(36) + Math.random().toString(36).substring(2, 7),
+        nome: nomeNormalizado,
+        quantidade: qtdDoar,
+        data: new Date().toISOString(),
+      };
+
+      const novasDoacoes = [...infoNoBanco.doacoes, novaDoacao];
+      const novaQtdDoada = infoNoBanco.quantidadeDoada + qtdDoar;
+      const estaReservado = novaQtdDoada >= infoNoBanco.quantidadeTotal;
 
       t.update(ref, {
-        reservadoPor: nomeNormalizado,
+        doacoes: novasDoacoes,
+        reservadoPor: estaReservado ? (novasDoacoes.length === 1 ? nomeNormalizado : 'Múltiplos') : null,
         reservadoEm: serverTimestamp(),
       });
-      return true;
+
+      return { ok: true, qtd: qtdDoar, estaReservado };
     });
 
     fecharDialogReserva();
 
-    if (ok) {
-      mostrarToast('Reservado! Obrigado, ' + nomeNormalizado + ' \uD83D\uDC9A', 'sucesso');
+    if (resultado.ok) {
+      const msgQtd = resultado.qtd > 1 ? `${resultado.qtd} unidades reservadas` : 'Reservado';
+      mostrarToast(`${msgQtd}! Obrigado, ${nomeNormalizado} 🩷`, 'sucesso');
+    } else if (resultado.motivo === 'esgotado') {
+      mostrarToast('Ops, esse presente acabou de ser totalmente reservado!', 'erro');
+    } else if (resultado.motivo === 'insuficiente') {
+      mostrarToast(`Ops, só restam ${resultado.restante} unidades disponíveis para doar!`, 'erro');
     } else {
-      mostrarToast('Ops, alguém reservou esse presente antes de você!', 'erro');
+      mostrarToast('Ops, não foi possível concluir a reserva.', 'erro');
     }
   } catch (_erro) {
     fecharDialogReserva();

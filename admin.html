@@ -85,9 +85,19 @@
       <main class="admin-main">
         <div class="container">
 
-          <!-- Formulário adicionar/editar presente -->
-          <section class="admin-secao" aria-labelledby="titulo-form-presente">
-            <h2 class="admin-secao__titulo" id="titulo-form-presente">Adicionar presente</h2>
+          <!-- Barra de ação superior -->
+          <div class="admin-acoes-topo">
+            <button type="button" id="btn-abrir-cadastro" class="btn btn--principal">
+              <span aria-hidden="true">➕</span> Novo Presente
+            </button>
+          </div>
+
+          <!-- Formulário adicionar/editar presente (colapsável) -->
+          <section class="admin-secao admin-secao--cadastro" id="secao-cadastro" aria-labelledby="titulo-form-presente" hidden>
+            <div class="admin-secao__cabecalho">
+              <h2 class="admin-secao__titulo" id="titulo-form-presente">Adicionar presente</h2>
+              <button type="button" id="btn-fechar-form" class="btn-fechar-secao" aria-label="Fechar formulário" title="Fechar formulário">✕</button>
+            </div>
             <!-- Aviso de reserva ativa (modo edição) -->
             <p id="aviso-reserva" class="form-aviso-reserva" hidden></p>
 
@@ -106,6 +116,22 @@
               </div>
 
               <div class="campo-login">
+                <label for="quantidadeTotal">
+                  Quantidade necessária <span style="font-weight:400;color:var(--c-texto-sec)">(padrão: 1)</span>
+                </label>
+                <input
+                  type="number"
+                  id="quantidadeTotal"
+                  name="quantidadeTotal"
+                  min="1"
+                  max="999"
+                  value="1"
+                  required
+                />
+                <small class="campo-ajuda">Para itens como fraldas ou lenços, informe quantos pacotes são necessários.</small>
+              </div>
+
+              <div class="campo-login">
                 <label for="descricao">Descrição <span style="font-weight:400;color:var(--c-texto-sec)">(opcional)</span></label>
                 <input
                   type="text"
@@ -116,7 +142,6 @@
                   autocomplete="off"
                 />
               </div>
-
 
               <div class="campo-login">
                 <label for="linkLoja">
@@ -180,6 +205,12 @@
 
         </div>
       </main>
+
+      <!-- Botão flutuante de novo presente (FAB) -->
+      <button type="button" id="btn-fab-cadastro" class="fab-cadastro" aria-label="Cadastrar novo presente" title="Cadastrar novo presente">
+        <span class="fab-cadastro__icone" aria-hidden="true">➕</span>
+        <span class="fab-cadastro__texto">Novo presente</span>
+      </button>
     </section>
 
     <script type="module" src="admin.js"></script>

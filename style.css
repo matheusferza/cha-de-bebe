@@ -1240,3 +1240,247 @@ dialog::backdrop {
   margin-top: var(--sp-xs);
   line-height: 1.45;
 }
+
+/* ============================================================
+   PROGRESSO DE QUANTIDADE E MULTI-DOAÇÕES (página pública)
+   ============================================================ */
+.card__selo--qtd {
+  background: var(--c-disp-bg);
+  color: var(--c-disp-texto);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.card__meta-qtd {
+  margin-top: var(--sp-xs);
+  margin-bottom: var(--sp-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card__meta-qtd-texto {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-texto-sec);
+  line-height: 1.35;
+}
+
+.card__meta-qtd-texto--concluido {
+  color: var(--c-principal);
+  font-weight: 700;
+}
+
+.card__meta-qtd-trilho {
+  width: 100%;
+  height: 6px;
+  background: var(--c-rosa-suave);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+}
+
+.card__meta-qtd-barra {
+  height: 100%;
+  background: var(--c-principal);
+  border-radius: var(--r-pill);
+  transition: width var(--dur-norm) ease;
+}
+
+/* Informações de quantidade no diálogo de reserva */
+.dialog-reserva__info {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--c-texto);
+  background: var(--c-disp-bg);
+  border: 1px solid var(--c-borda);
+  border-radius: var(--r-md);
+  padding: var(--sp-xs) var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+
+.dialog-reserva__ajuda {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--c-texto-sec);
+  margin-top: var(--sp-xs);
+}
+
+/* ============================================================
+   ADMIN — SEÇÃO DE CADASTRO COLAPSÁVEL & BOTÃO FAB
+   ============================================================ */
+.admin-acoes-topo {
+  margin-bottom: var(--sp-lg);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.btn-abrir-cadastro {
+  font-size: 0.9375rem;
+  padding: 12px var(--sp-lg);
+  box-shadow: var(--sombra-sm);
+}
+
+.admin-secao--cadastro {
+  margin-bottom: var(--sp-xl);
+  transition: opacity var(--dur-norm) ease;
+}
+
+.admin-secao__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--c-borda);
+  margin-bottom: var(--sp-lg);
+  padding-bottom: var(--sp-sm);
+}
+
+.admin-secao__cabecalho .admin-secao__titulo {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.btn-fechar-secao {
+  background: transparent;
+  border: 1px solid var(--c-borda);
+  border-radius: var(--r-pill);
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--c-texto-sec);
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+
+.btn-fechar-secao:hover {
+  background: var(--c-rosa-suave);
+  color: var(--c-principal);
+}
+
+.btn-fechar-secao:focus-visible {
+  outline: 3px solid var(--c-principal);
+  outline-offset: 2px;
+}
+
+/* Botão Flutuante (FAB) */
+.fab-cadastro {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 90;
+  background: var(--c-principal);
+  color: var(--c-branco);
+  border: 2px solid var(--c-rosa-suave);
+  border-radius: var(--r-pill);
+  padding: 14px 20px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-corpo);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--sombra-lg);
+  transition: transform var(--dur-fast), background var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.fab-cadastro:hover {
+  background: var(--c-principal-dk);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 28px rgba(74, 31, 39, 0.22);
+}
+
+.fab-cadastro:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.fab-cadastro:focus-visible {
+  outline: 3px solid var(--c-principal);
+  outline-offset: 3px;
+}
+
+.fab-cadastro__icone {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ============================================================
+   ADMIN — DETALHAMENTO DE QUANTIDADES E DOADORES
+   ============================================================ */
+.card-admin__qtd {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-texto-sec);
+  margin-top: 2px;
+  margin-bottom: var(--sp-xs);
+}
+
+.card-admin__doacoes {
+  margin-top: var(--sp-sm);
+  background: var(--c-fundo);
+  border: 1px solid var(--c-borda);
+  border-radius: var(--r-md);
+  padding: var(--sp-sm) var(--sp-md);
+}
+
+.card-admin__doacoes-titulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--c-texto);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--sp-xs);
+}
+
+.card-admin__doacoes-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-admin__doacao-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  font-size: 0.8125rem;
+  color: var(--c-texto);
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--c-borda);
+}
+
+.card-admin__doacao-item:last-child {
+  border-bottom: none;
+}
+
+.btn-liberar-doacao {
+  background: transparent;
+  color: var(--c-erro);
+  border: 1px solid var(--c-erro);
+  border-radius: var(--r-sm);
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-height: 34px;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+  white-space: nowrap;
+}
+
+.btn-liberar-doacao:hover {
+  background: var(--c-erro);
+  color: var(--c-branco);
+}
+
+.btn-liberar-doacao:focus-visible {
+  outline: 3px solid var(--c-principal);
+  outline-offset: 2px;
+}
