@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#2F7D5B" />
+    <!-- Favicon via emoji data URI -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Nunito:wght@400;500;600;700&display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>Painel Admin — Chá de Bebê da Ayla</title>
+  </head>
+  <body>
+
+    <!-- ═══════════════════════════════════════
+         SEÇÃO DE LOGIN
+    ══════════════════════════════════════════ -->
+    <section id="login" aria-label="Login do administrador">
+      <div class="admin-login-wrapper">
+        <div class="admin-login-card">
+          <p class="admin-login-card__titulo" aria-hidden="true">🔑</p>
+          <h1 class="admin-login-card__titulo">Painel Admin</h1>
+          <p class="admin-login-card__sub">Chá de Bebê da Ayla</p>
+
+          <form id="form-login" novalidate>
+            <div class="campo-login">
+              <label for="email">E-mail</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                autocomplete="email"
+                required
+                placeholder="seu@email.com"
+              />
+            </div>
+
+            <div class="campo-login">
+              <label for="senha">Senha</label>
+              <input
+                type="password"
+                id="senha"
+                name="senha"
+                autocomplete="current-password"
+                required
+                placeholder="••••••••"
+              />
+            </div>
+
+            <p id="erro-login" class="erro" role="alert" aria-live="assertive"></p>
+
+            <button type="submit" id="btn-entrar" class="btn btn--principal btn--bloco">
+              Entrar
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         PAINEL DO ADMINISTRADOR
+    ══════════════════════════════════════════ -->
+    <section id="painel" hidden aria-label="Painel do administrador">
+
+      <!-- Cabeçalho -->
+      <header class="admin-header">
+        <div class="container admin-header__inner">
+          <div>
+            <p class="admin-header__titulo">Painel Admin</p>
+            <p class="admin-header__sub">Chá de Bebê da Ayla</p>
+          </div>
+          <button id="btn-sair" type="button">
+            <span aria-hidden="true">↩</span> Sair
+          </button>
+        </div>
+      </header>
+
+      <main class="admin-main">
+        <div class="container">
+
+          <!-- Formulário adicionar/editar presente -->
+          <section class="admin-secao" aria-labelledby="titulo-form-presente">
+            <h2 class="admin-secao__titulo" id="titulo-form-presente">Adicionar presente</h2>
+            <!-- Aviso de reserva ativa (modo edição) -->
+            <p id="aviso-reserva" class="form-aviso-reserva" hidden></p>
+
+            <form id="form-presente" novalidate>
+              <div class="campo-login">
+                <label for="nome">Nome do presente <span aria-hidden="true">*</span></label>
+                <input
+                  type="text"
+                  id="nome"
+                  name="nome"
+                  required
+                  maxlength="80"
+                  placeholder="Ex: Kit banho bebê"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="campo-login">
+                <label for="descricao">Descrição <span style="font-weight:400;color:var(--c-texto-sec)">(opcional)</span></label>
+                <input
+                  type="text"
+                  id="descricao"
+                  name="descricao"
+                  maxlength="140"
+                  placeholder="Ex: Sabonete, shampoo e toalha"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="campo-login">
+                <label for="preco">Preço (R$) <span aria-hidden="true">*</span></label>
+                <input
+                  type="number"
+                  id="preco"
+                  name="preco"
+                  step="0.01"
+                  min="0"
+                  placeholder="0,00"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="campo-login">
+                <label for="linkLoja">
+                  Link de sugestão
+                  <span style="font-weight:400;color:var(--c-texto-sec)">(opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  id="linkLoja"
+                  name="linkLoja"
+                  placeholder="https://"
+                  maxlength="500"
+                  autocomplete="off"
+                />
+                <small class="campo-ajuda">Opcional. Cole o link do produto; os convidados verão um botão &#39;Ver sugestão&#39;.</small>
+              </div>
+
+              <div class="campo-login">
+                <label for="imagemUrl">
+                  Link da imagem (https)
+                  <span style="font-weight:400;color:var(--c-texto-sec)">(opcional)</span>
+                </label>
+                <input
+                  type="url"
+                  id="imagemUrl"
+                  name="imagemUrl"
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  autocomplete="off"
+                />
+                <small class="campo-ajuda">Opcional. Use o endereço direto da imagem: clique com o botão direito na foto do produto e escolha &#39;Copiar endereço da imagem&#39;. Links de páginas ou de busca do Google não funcionam.</small>
+                <!-- Pré-visualização da imagem -->
+                <div id="imagem-preview" class="imagem-preview" hidden></div>
+              </div>
+
+              <p id="erro-form" class="erro" role="alert" aria-live="assertive"></p>
+
+              <button type="button" id="btn-cancelar-edicao" class="btn btn--secundario btn--bloco" hidden>
+                Cancelar edição
+              </button>
+              <button type="submit" id="btn-adicionar">
+                Adicionar presente
+              </button>
+            </form>
+          </section>
+
+          <!-- Lista de presentes cadastrados -->
+          <section class="admin-secao" aria-labelledby="titulo-lista">
+            <h2 class="admin-secao__titulo" id="titulo-lista">Presentes cadastrados</h2>
+            <div id="lista-admin" aria-live="polite" aria-label="Lista de presentes cadastrados"></div>
+          </section>
+
+        </div>
+      </main>
+    </section>
+
+    <script type="module" src="admin.js"></script>
+  </body>
+</html>
