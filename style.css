@@ -1360,11 +1360,30 @@ dialog::backdrop {
 
 .admin-secao--cadastro > form {
   margin-bottom: auto;
-  padding: 0 var(--sp-lg) var(--sp-lg);
+  padding: 0 var(--sp-lg) var(--sp-md);
   border: 1px solid var(--c-borda);
   border-top: 0;
   border-radius: 0 0 var(--r-xl) var(--r-xl);
   box-shadow: var(--sombra-lg);
+  gap: var(--sp-sm);
+}
+
+.admin-secao--cadastro .campo-login { gap: 4px; }
+.admin-secao--cadastro .campo-login label { font-size: 12px; }
+.admin-secao--cadastro .campo-ajuda { font-size: 10px; line-height: 1.35; }
+.admin-secao--cadastro input:not([type="file"]) {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.admin-secao--cadastro .admin-secao__titulo { font-size: 1.1rem; }
+
+@media (max-width: 600px) {
+  .admin-secao--cadastro { padding: 12px; }
+  .admin-secao--cadastro > .admin-secao__cabecalho {
+    padding: var(--sp-md) var(--sp-md) var(--sp-sm);
+  }
+  .admin-secao--cadastro > form { padding: 0 var(--sp-md) var(--sp-md); }
 }
 
 body:has(.admin-secao--cadastro:not([hidden])) { overflow: hidden; }
