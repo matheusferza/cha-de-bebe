@@ -1368,7 +1368,7 @@ dialog::backdrop {
   gap: var(--sp-sm);
 }
 
-.admin-secao--cadastro .campo-login { gap: 4px; }
+.admin-secao--cadastro .campo-login { gap: 2px; }
 .admin-secao--cadastro .campo-login label { font-size: 12px; }
 .admin-secao--cadastro .campo-ajuda { font-size: 10px; line-height: 1.35; }
 .admin-secao--cadastro input:not([type="file"]) {
