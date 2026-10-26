@@ -118,8 +118,6 @@ btnRemoverFoto.addEventListener('click', () => {
 // ─── Helpers de abertura / fechamento da seção de cadastro ──────────────────
 function abrirSecaoCadastro(focarInput = true) {
   secaoCadastro.hidden = false;
-  const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
   if (focarInput) {
     document.getElementById('nome').focus();
   }
@@ -128,7 +126,16 @@ function abrirSecaoCadastro(focarInput = true) {
 function fecharSecaoCadastro() {
   sairModoEdicao();
   secaoCadastro.hidden = true;
+  btnAbrirCadastro.focus();
 }
+
+secaoCadastro.addEventListener('click', (evento) => {
+  if (evento.target === secaoCadastro) fecharSecaoCadastro();
+});
+
+document.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Escape' && !secaoCadastro.hidden) fecharSecaoCadastro();
+});
 
 if (btnAbrirCadastro) {
   btnAbrirCadastro.addEventListener('click', () => {
@@ -139,14 +146,8 @@ if (btnAbrirCadastro) {
 
 if (btnFabCadastro) {
   btnFabCadastro.addEventListener('click', () => {
-    if (secaoCadastro.hidden) {
-      sairModoEdicao();
-      abrirSecaoCadastro(true);
-    } else {
-      const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
-      document.getElementById('nome').focus();
-    }
+    sairModoEdicao();
+    abrirSecaoCadastro(true);
   });
 }
 
@@ -199,9 +200,6 @@ function entrarModoEdicao(id, dados) {
   cardEditando = document.querySelector(`.card-admin[data-id="${id}"]`);
   if (cardEditando) cardEditando.classList.add('card-admin--editando');
 
-  // Scroll suave até o formulário, respeitando prefers-reduced-motion
-  const prefReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  secaoCadastro.scrollIntoView({ behavior: prefReducido ? 'auto' : 'smooth', block: 'start' });
   document.getElementById('nome').focus();
 }
 

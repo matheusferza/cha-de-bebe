@@ -1321,9 +1321,53 @@ dialog::backdrop {
 }
 
 .admin-secao--cadastro {
-  margin-bottom: var(--sp-xl);
-  transition: opacity var(--dur-norm) ease;
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: auto;
+  background: rgba(42, 24, 27, 0.48);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overscroll-behavior: contain;
 }
+
+.admin-secao--cadastro[hidden] { display: none; }
+
+.admin-secao--cadastro > * {
+  width: min(100%, 760px);
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--c-superficie);
+}
+
+.admin-secao--cadastro > .admin-secao__cabecalho {
+  margin-top: auto;
+  margin-bottom: 0;
+  padding: var(--sp-lg) var(--sp-lg) var(--sp-sm);
+  border: 1px solid var(--c-borda);
+  border-bottom: 0;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+}
+
+.admin-secao--cadastro > form {
+  margin-bottom: auto;
+  padding: 0 var(--sp-lg) var(--sp-lg);
+  border: 1px solid var(--c-borda);
+  border-top: 0;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  box-shadow: var(--sombra-lg);
+}
+
+body:has(.admin-secao--cadastro:not([hidden])) { overflow: hidden; }
 
 .admin-secao__cabecalho {
   display: flex;
@@ -1390,6 +1434,8 @@ dialog::backdrop {
   box-shadow: var(--sombra-lg);
   transition: transform var(--dur-fast), background var(--dur-fast), box-shadow var(--dur-fast);
 }
+
+body:has(.admin-secao--cadastro:not([hidden])) .fab-cadastro { visibility: hidden; }
 
 .fab-cadastro:hover {
   background: var(--c-principal-dk);
