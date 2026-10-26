@@ -8,21 +8,44 @@
 
 /* ─── Tokens ────────────────────────────────────────────────── */
 :root {
-  /* Cores */
-  --c-fundo:        #FBF6EF;
-  --c-superficie:   #FFFFFF;
-  --c-texto:        #2B2B2B;
-  --c-texto-sec:    #5C5C5C;
-  --c-principal:    #2F7D5B;
-  --c-principal-dk: #1e5c41;
-  --c-rosa:         #F3C9C4;
-  --c-azul:         #CFE3F1;
-  --c-erro:         #B22B22;   /* vermelho acessível sobre branco: 5.9:1 */
-  --c-ambar:        #7A5200;   /* âmbar sobre branco: 5.5:1 */
-  --c-ambar-bg:     #FFF3CD;
-  --c-disponivel-bg:#E8F5EE;
-  --c-skel:         #E8E0D5;
-  --c-skel-shine:   #F4EEE5;
+  /* Cores — Paleta Rosa, Vinho e Creme */
+  --c-fundo:             #FBE7DC;
+  --c-hero-topo:         #FAD6CC;
+  --c-hero-base:         #FBE7DC;
+  --c-superficie:        #FFF9F5;
+  --c-superficie-res:    #F3E1DA;
+  --c-texto:             #4A1F27;
+  --c-texto-sec:         #7A3B45;
+  --c-principal:         #A82140;
+  --c-principal-dk:      #8C1A35;
+  --c-destaque:          #B91F4E;
+  --c-rosa-terroso:      #B74D57; /* APENAS bordas e decoração, nunca texto */
+  --c-rosa-coral:        #CB5054;
+  --c-rosa-suave:        #F5D2C7; /* chips, trilho barra, skeleton, bordas leves */
+  --c-rosa-laco:         #ED7D7D;
+  --c-ursinho-1:         #AB6144;
+  --c-ursinho-2:         #CF8866;
+  --c-disp-bg:           #FADCD5;
+  --c-disp-texto:        #7A1B38;
+  --c-res-admin-bg:      #F1E2D3;
+  --c-res-admin-texto:   #5A3A22;
+  --c-res-midia-bg:      rgba(74, 31, 39, 0.82);
+  --c-res-midia-texto:   #FFFFFF;
+  --c-erro:              #9A2A1F;
+  --c-toast-sucesso:     #7A1F3D;
+  --c-toast-erro:        #8E2418;
+  --c-toast-info:        #4A1F27;
+  --c-toast-texto:       #FFFFFF;
+  --c-branco:            #FFFFFF;
+  --c-borda:             #F5D2C7;
+  --c-borda-input:       #B74D57;
+  --c-skel:              #F5D2C7;
+  --c-skel-shine:        #FFF9F5;
+
+  /* Aliases compatíveis */
+  --c-disponivel-bg:     #FADCD5;
+  --c-ambar-bg:          #F1E2D3;
+  --c-ambar:             #5A3A22;
 
   /* Raios */
   --r-sm:  8px;
@@ -32,9 +55,9 @@
   --r-pill: 999px;
 
   /* Sombras */
-  --sombra-sm: 0 1px 4px rgba(0,0,0,0.07);
-  --sombra-md: 0 4px 16px rgba(0,0,0,0.08);
-  --sombra-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --sombra-sm: 0 1px 4px rgba(74, 31, 39, 0.08);
+  --sombra-md: 0 4px 16px rgba(74, 31, 39, 0.10);
+  --sombra-lg: 0 8px 32px rgba(74, 31, 39, 0.14);
 
   /* Espaçamentos */
   --sp-xs:  4px;
@@ -62,6 +85,12 @@
 
 [hidden] { display: none !important; }
 
+/* ─── Seleção de texto ──────────────────────────────────────── */
+::selection {
+  background: var(--c-rosa-suave);
+  color: var(--c-texto);
+}
+
 /* ─── Base ──────────────────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
@@ -78,12 +107,12 @@ body {
 
 img { display: block; max-width: 100%; }
 
-a { color: var(--c-principal); }
+a { color: var(--c-destaque); }
 
 /* ─── Foco visível ──────────────────────────────────────────── */
 :focus-visible {
   outline: 3px solid var(--c-principal);
-  outline-offset: 3px;
+  outline-offset: 2px;
   border-radius: var(--r-sm);
 }
 
@@ -127,7 +156,7 @@ a { color: var(--c-principal); }
 /* Principal */
 .btn--principal {
   background: var(--c-principal);
-  color: #fff;
+  color: var(--c-branco);
   border-color: var(--c-principal);
 }
 .btn--principal:hover:not(:disabled) {
@@ -140,29 +169,30 @@ a { color: var(--c-principal); }
 /* Secundário */
 .btn--secundario {
   background: transparent;
-  color: var(--c-texto-sec);
-  border-color: #C0BAB2;
+  color: var(--c-texto);
+  border-color: var(--c-rosa-terroso);
 }
 .btn--secundario:hover:not(:disabled) {
-  background: #F0EBE3;
+  background: var(--c-rosa-suave);
   color: var(--c-texto);
+  border-color: var(--c-rosa-terroso);
 }
 
-/* Perigo */
+/* Perigo (diálogo de confirmação - preenchido) */
 .btn--perigo {
   background: var(--c-erro);
-  color: #fff;
+  color: var(--c-branco);
   border-color: var(--c-erro);
 }
 .btn--perigo:hover:not(:disabled) {
-  background: #8E2019;
-  border-color: #8E2019;
+  background: var(--c-principal-dk);
+  border-color: var(--c-principal-dk);
 }
 
 /* Fantasma sair */
 .btn--ghost {
   background: rgba(255,255,255,0.15);
-  color: #fff;
+  color: var(--c-branco);
   border-color: rgba(255,255,255,0.35);
   backdrop-filter: blur(4px);
 }
@@ -175,9 +205,9 @@ a { color: var(--c-principal); }
 
 /* Reservado / desabilitado público */
 .btn--reservado {
-  background: #D6D0C9;
+  background: var(--c-rosa-suave);
   color: var(--c-texto-sec);
-  border-color: #D6D0C9;
+  border-color: var(--c-rosa-suave);
   cursor: not-allowed;
 }
 
@@ -202,7 +232,7 @@ button { font-family: var(--font-corpo); }
 .form-input {
   width: 100%;
   padding: 12px var(--sp-md);
-  border: 1.5px solid #C8C2BA;
+  border: 1.5px solid var(--c-rosa-terroso);
   border-radius: var(--r-md);
   font-family: var(--font-corpo);
   font-size: 1rem;      /* ≥16px: evita zoom no iOS */
@@ -215,10 +245,10 @@ button { font-family: var(--font-corpo); }
 .form-input:focus {
   outline: none;
   border-color: var(--c-principal);
-  box-shadow: 0 0 0 3px rgba(47, 125, 91, 0.2);
+  box-shadow: 0 0 0 3px rgba(168, 33, 64, 0.2);
 }
 
-.form-input::placeholder { color: #9E9790; }
+.form-input::placeholder { color: var(--c-texto-sec); opacity: 0.7; }
 
 .form-erro {
   font-size: 0.8125rem;
@@ -230,7 +260,7 @@ button { font-family: var(--font-corpo); }
 /* Compat admin legado */
 input {
   padding: 12px var(--sp-md);
-  border: 1.5px solid #C8C2BA;
+  border: 1.5px solid var(--c-rosa-terroso);
   border-radius: var(--r-md);
   font-family: var(--font-corpo);
   font-size: 1rem;
@@ -243,7 +273,7 @@ input {
 input:focus {
   outline: none;
   border-color: var(--c-principal);
-  box-shadow: 0 0 0 3px rgba(47,125,91,0.2);
+  box-shadow: 0 0 0 3px rgba(168, 33, 64, 0.2);
 }
 
 /* ============================================================
@@ -290,16 +320,16 @@ input:focus {
 }
 
 .toast--sucesso {
-  background: #1a5c3e;
-  color: #fff;
+  background: var(--c-toast-sucesso);
+  color: var(--c-toast-texto);
 }
 .toast--erro {
-  background: #7a1a14;
-  color: #fff;
+  background: var(--c-toast-erro);
+  color: var(--c-toast-texto);
 }
 .toast--info {
-  background: #2B2B2B;
-  color: #fff;
+  background: var(--c-toast-info);
+  color: var(--c-toast-texto);
 }
 
 .toast span { flex: 1; }
@@ -330,17 +360,26 @@ input:focus {
    DIALOGS
    ============================================================ */
 dialog {
-  border: none;
+  margin: auto;              /* centraliza na horizontal e na vertical */
+  inset: 0;
+  width: min(92vw, 440px);   /* nunca encosta nas bordas do celular */
+  height: fit-content;
+  max-height: 90dvh;         /* não estoura em telas baixas ou com teclado */
+  overflow-y: auto;
+  border: 1px solid var(--c-borda);
   border-radius: var(--r-xl);
   box-shadow: var(--sombra-lg);
   padding: var(--sp-xl) var(--sp-lg);
-  width: min(480px, calc(100vw - 32px));
   background: var(--c-superficie);
   color: var(--c-texto);
 }
 
+dialog:not([open]) {
+  display: none;
+}
+
 dialog::backdrop {
-  background: rgba(0,0,0,0.45);
+  background: rgba(74, 31, 39, 0.45);
   backdrop-filter: blur(3px);
 }
 
@@ -349,6 +388,7 @@ dialog::backdrop {
   font-family: var(--font-titulo);
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--c-destaque);
   margin-bottom: var(--sp-sm);
 }
 
@@ -375,11 +415,12 @@ dialog::backdrop {
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: var(--sp-xs);
+  color: var(--c-texto);
 }
 .dialog-reserva__input {
   width: 100%;
   padding: 12px var(--sp-md);
-  border: 1.5px solid #C8C2BA;
+  border: 1.5px solid var(--c-borda-input);
   border-radius: var(--r-md);
   font-family: var(--font-corpo);
   font-size: 1rem;
@@ -390,7 +431,7 @@ dialog::backdrop {
 .dialog-reserva__input:focus {
   outline: none;
   border-color: var(--c-principal);
-  box-shadow: 0 0 0 3px rgba(47,125,91,0.2);
+  box-shadow: 0 0 0 3px rgba(168, 33, 64, 0.2);
 }
 .dialog-reserva__erro {
   color: var(--c-erro);
@@ -425,20 +466,20 @@ dialog::backdrop {
   box-shadow: var(--sombra-sm);
   padding: 0;
   overflow: hidden;
+  border: 1px solid var(--c-borda);
 }
 
 .skeleton-card__img { height: 160px; }
 .skeleton-card__corpo { padding: var(--sp-md); }
 .skeleton-card__titulo { height: 20px; width: 60%; margin-bottom: var(--sp-sm); }
-.skeleton-card__desc   { height: 14px; width: 80%; margin-bottom: var(--sp-xs); }
-.skeleton-card__preco  { height: 24px; width: 40%; border-radius: var(--r-pill); margin-bottom: var(--sp-md); }
+.skeleton-card__desc   { height: 14px; width: 80%; margin-bottom: var(--sp-sm); }
 .skeleton-card__btn    { height: 44px; border-radius: var(--r-md); }
 
 /* ============================================================
    HERO (index.html)
    ============================================================ */
 .hero {
-  background: linear-gradient(145deg, #f7ede4 0%, #e8f3ef 55%, #dceaf5 100%);
+  background: linear-gradient(180deg, var(--c-hero-topo) 0%, var(--c-hero-base) 100%);
   padding: var(--sp-xl) var(--sp-md) 0;
   text-align: center;
   position: relative;
@@ -456,7 +497,7 @@ dialog::backdrop {
   font-family: var(--font-titulo);
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 700;
-  color: var(--c-texto);
+  color: var(--c-destaque);
   line-height: 1.15;
   margin-bottom: var(--sp-sm);
   position: relative;
@@ -487,9 +528,8 @@ dialog::backdrop {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255,255,255,0.8);
+  background: var(--c-rosa-suave);
+  border: 1px solid var(--c-borda);
   border-radius: var(--r-pill);
   padding: 6px 14px;
   font-size: 0.875rem;
@@ -528,20 +568,20 @@ dialog::backdrop {
   width: 100%;
   height: 8px;
   border-radius: var(--r-pill);
-  background: #E0D9D0;
+  background: var(--c-rosa-suave);
   overflow: hidden;
   appearance: none;
   -webkit-appearance: none;
   border: none;
 }
-.progresso-barra::-webkit-progress-bar  { background: #E0D9D0; border-radius: var(--r-pill); }
+.progresso-barra::-webkit-progress-bar  { background: var(--c-rosa-suave); border-radius: var(--r-pill); }
 .progresso-barra::-webkit-progress-value {
-  background: linear-gradient(90deg, var(--c-principal), #5BA887);
+  background: linear-gradient(90deg, var(--c-destaque), var(--c-principal));
   border-radius: var(--r-pill);
   transition: width 0.5s ease;
 }
 .progresso-barra::-moz-progress-bar {
-  background: linear-gradient(90deg, var(--c-principal), #5BA887);
+  background: linear-gradient(90deg, var(--c-destaque), var(--c-principal));
   border-radius: var(--r-pill);
 }
 
@@ -570,10 +610,10 @@ dialog::backdrop {
   width: 44px;
   height: 24px;
   min-height: unset;
-  border: none;
+  border: 1.5px solid var(--c-rosa-terroso);
   appearance: none;
   -webkit-appearance: none;
-  background: #C8C2BA;
+  background: var(--c-rosa-suave);
   border-radius: var(--r-pill);
   position: relative;
   cursor: pointer;
@@ -583,15 +623,16 @@ dialog::backdrop {
 .controles__toggle input[type="checkbox"]::before {
   content: '';
   position: absolute;
-  top: 3px; left: 3px;
-  width: 18px; height: 18px;
+  top: 2px; left: 2px;
+  width: 17px; height: 17px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--c-branco);
   transition: transform var(--dur-fast);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  box-shadow: 0 1px 3px rgba(74, 31, 39, 0.2);
 }
 .controles__toggle input[type="checkbox"]:checked {
   background: var(--c-principal);
+  border-color: var(--c-principal);
 }
 .controles__toggle input[type="checkbox"]:checked::before {
   transform: translateX(20px);
@@ -625,6 +666,7 @@ dialog::backdrop {
 /* ─── Cartão individual ─────────────────────────────────────── */
 .card {
   background: var(--c-superficie);
+  border: 1px solid var(--c-borda);
   border-radius: var(--r-xl);
   box-shadow: var(--sombra-sm);
   overflow: hidden;
@@ -653,7 +695,7 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f7ede4 0%, #e8f3ef 100%);
+  background: var(--c-superficie-res);
   font-size: 3.5rem;
   overflow: hidden;
 }
@@ -666,8 +708,8 @@ dialog::backdrop {
 }
 
 /* Cartão reservado */
-.card.reservado .card__midia { filter: grayscale(100%) brightness(0.92); }
-.card.reservado { background: #F5F1EB; }
+.card.reservado .card__midia { filter: grayscale(100%) brightness(0.95); }
+.card.reservado { background: var(--c-superficie-res); border-color: var(--c-borda); }
 
 .card.reservado:hover {
   box-shadow: var(--sombra-sm);
@@ -680,7 +722,7 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: var(--sp-sm);
+  gap: var(--sp-xs);
 }
 
 .card h3 {
@@ -697,24 +739,7 @@ dialog::backdrop {
   color: var(--c-texto-sec);
   line-height: 1.45;
   flex: 1;
-  margin: 0;
-}
-
-.card__preco {
-  display: inline-flex;
-  align-items: center;
-  background: var(--c-disponivel-bg);
-  color: var(--c-principal-dk);
-  border-radius: var(--r-pill);
-  padding: 3px 12px;
-  font-size: 0.875rem;
-  font-weight: 700;
-  align-self: flex-start;
-}
-
-.card.reservado .card__preco {
-  background: #E8E2D9;
-  color: var(--c-texto-sec);
+  margin: 0 0 var(--sp-xs);
 }
 
 /* Botão dentro do cartão */
@@ -722,7 +747,7 @@ dialog::backdrop {
   margin-top: auto;
 }
 
-/* Selo reservado */
+/* Selo reservado sobre mídia */
 .card__selo {
   position: absolute;
   top: var(--sp-sm);
@@ -730,8 +755,8 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0,0,0,0.55);
-  color: #fff;
+  background: var(--c-res-midia-bg);
+  color: var(--c-res-midia-texto);
   border-radius: var(--r-pill);
   padding: 4px 10px;
   font-size: 0.75rem;
@@ -749,7 +774,7 @@ dialog::backdrop {
 .lista-mensagem__titulo {
   font-family: var(--font-titulo);
   font-size: 1.3rem;
-  color: var(--c-texto);
+  color: var(--c-destaque);
   margin-bottom: var(--sp-sm);
 }
 
@@ -769,7 +794,7 @@ dialog::backdrop {
   padding: var(--sp-lg) var(--sp-md);
   font-size: 0.875rem;
   color: var(--c-texto-sec);
-  border-top: 1px solid #EDE7DE;
+  border-top: 1px solid var(--c-borda);
 }
 
 /* ============================================================
@@ -781,11 +806,12 @@ dialog::backdrop {
   align-items: center;
   justify-content: center;
   padding: var(--sp-md);
-  background: linear-gradient(135deg, #f7ede4 0%, #e8f3ef 100%);
+  background: linear-gradient(135deg, var(--c-hero-topo) 0%, var(--c-fundo) 100%);
 }
 
 .admin-login-card {
   background: var(--c-superficie);
+  border: 1px solid var(--c-borda);
   border-radius: var(--r-xl);
   box-shadow: var(--sombra-lg);
   padding: var(--sp-xl) var(--sp-lg);
@@ -797,6 +823,7 @@ dialog::backdrop {
   font-family: var(--font-titulo);
   font-size: 1.6rem;
   font-weight: 700;
+  color: var(--c-destaque);
   margin-bottom: var(--sp-xs);
   text-align: center;
 }
@@ -834,7 +861,7 @@ dialog::backdrop {
    ============================================================ */
 .admin-header {
   background: linear-gradient(135deg, var(--c-principal) 0%, var(--c-principal-dk) 100%);
-  color: #fff;
+  color: var(--c-branco);
   padding: var(--sp-md) 0;
   margin-bottom: var(--sp-xl);
 }
@@ -860,7 +887,7 @@ dialog::backdrop {
 /* Botão sair */
 #btn-sair {
   background: rgba(255,255,255,0.15);
-  color: #fff;
+  color: var(--c-branco);
   border: 2px solid rgba(255,255,255,0.35);
   border-radius: var(--r-md);
   padding: 8px 16px;
@@ -878,6 +905,7 @@ dialog::backdrop {
 /* ─── Secoes do admin ───────────────────────────────────────── */
 .admin-secao {
   background: var(--c-superficie);
+  border: 1px solid var(--c-borda);
   border-radius: var(--r-xl);
   box-shadow: var(--sombra-sm);
   padding: var(--sp-lg);
@@ -888,9 +916,10 @@ dialog::backdrop {
   font-family: var(--font-titulo);
   font-size: 1.2rem;
   font-weight: 600;
+  color: var(--c-destaque);
   margin-bottom: var(--sp-lg);
   padding-bottom: var(--sp-sm);
-  border-bottom: 1px solid #EDE7DE;
+  border-bottom: 1px solid var(--c-borda);
 }
 
 /* ─── form-presente interno ────────────────────────────────── */
@@ -899,13 +928,9 @@ dialog::backdrop {
   flex-direction: column;
   gap: var(--sp-md);
 }
-#form-presente input,
-#form-presente button {
-  /* Herda do reset global */
-}
 #form-presente button[type="submit"] {
   background: var(--c-principal);
-  color: #fff;
+  color: var(--c-branco);
   border: 2px solid var(--c-principal);
   border-radius: var(--r-md);
   padding: 12px var(--sp-lg);
@@ -933,7 +958,7 @@ dialog::backdrop {
   justify-content: space-between;
   gap: var(--sp-md);
   padding: var(--sp-md) 0;
-  border-bottom: 1px solid #EDE7DE;
+  border-bottom: 1px solid var(--c-borda);
 }
 .card-admin:last-child { border-bottom: none; }
 
@@ -942,15 +967,10 @@ dialog::backdrop {
   font-family: var(--font-titulo);
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 2px;
+  margin-bottom: var(--sp-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.card-admin__detalhe {
-  font-size: 0.8125rem;
-  color: var(--c-texto-sec);
-  margin-bottom: var(--sp-xs);
 }
 
 /* Selos de situação */
@@ -965,12 +985,12 @@ dialog::backdrop {
   letter-spacing: 0.02em;
 }
 .selo--disponivel {
-  background: var(--c-disponivel-bg);
-  color: #1a5c3e;    /* verde escuro: contraste 6.5:1 sobre #E8F5EE */
+  background: var(--c-disp-bg);
+  color: var(--c-disp-texto);
 }
 .selo--reservado {
-  background: var(--c-ambar-bg);
-  color: var(--c-ambar); /* contraste 5.5:1 sobre #FFF3CD */
+  background: var(--c-res-admin-bg);
+  color: var(--c-res-admin-texto);
 }
 
 /* Ações admin */
@@ -990,29 +1010,35 @@ dialog::backdrop {
   padding: 8px 14px;
   min-height: 44px;
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: background var(--dur-fast);
+  transition: background var(--dur-fast), color var(--dur-fast);
   white-space: nowrap;
 }
 .card-admin__acoes .secundario {
   background: transparent;
-  color: var(--c-texto-sec);
-  border-color: #C0BAB2;
+  color: var(--c-texto);
+  border: 2px solid var(--c-rosa-terroso);
 }
-.card-admin__acoes .secundario:hover { background: #F0EBE3; color: var(--c-texto); }
+.card-admin__acoes .secundario:hover {
+  background: var(--c-rosa-suave);
+  color: var(--c-texto);
+  border-color: var(--c-rosa-terroso);
+}
 
+/* Botão Excluir na lista do admin: contornado */
 .card-admin__acoes .perigo {
-  background: var(--c-erro);
-  color: #fff;
-  border-color: var(--c-erro);
+  background: transparent;
+  color: var(--c-erro);
+  border: 2px solid var(--c-erro);
 }
-.card-admin__acoes .perigo:hover { background: #8E2019; border-color: #8E2019; }
+.card-admin__acoes .perigo:hover {
+  background: var(--c-erro);
+  color: var(--c-branco);
+}
 .card-admin__acoes button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* ============================================================
    ADMIN — Login legado (mantém IDs existentes)
    ============================================================ */
-/* index.html e admin.html usam id="lista" e id="lista-admin" */
 #lista-admin {
   /* Conteiner; cartões filhos recebem .card-admin */
 }
@@ -1063,9 +1089,9 @@ dialog::backdrop {
   font-family: var(--font-corpo);
   font-size: 0.875rem;
   font-weight: 700;
-  color: var(--c-principal-dk);   /* #1e5c41: 7.0:1 sobre branco */
+  color: var(--c-principal);
   text-decoration: none;
-  border: 2px solid var(--c-principal-dk);
+  border: 2px solid var(--c-principal);
   border-radius: var(--r-md);
   padding: 8px 14px;
   min-height: 44px;
@@ -1074,11 +1100,12 @@ dialog::backdrop {
   margin-top: var(--sp-xs);
 }
 .card__link-sugestao:hover {
-  background: var(--c-disponivel-bg);
+  background: var(--c-disp-bg);
+  color: var(--c-principal-dk);
 }
 .card__link-sugestao:focus-visible {
   outline: 3px solid var(--c-principal);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 /* ============================================================
@@ -1089,23 +1116,23 @@ dialog::backdrop {
 .card-admin--editando {
   border-left: 4px solid var(--c-principal);
   padding-left: calc(var(--sp-md) - 4px);
-  background: #F0FAF5;
+  background: var(--c-disp-bg);
 }
 
 /* Tag "— Editando" ao lado do nome */
 .card-admin__editando-tag {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--c-principal-dk);
+  color: var(--c-destaque);
   letter-spacing: 0.02em;
   margin-left: var(--sp-xs);
 }
 
 /* Aviso de reserva ativa (dentro do formulário) */
 .form-aviso-reserva {
-  background: var(--c-ambar-bg);
-  color: var(--c-ambar);    /* #7A5200: 5.5:1 sobre #FFF3CD */
-  border: 1px solid #E5C96A;
+  background: var(--c-res-admin-bg);
+  color: var(--c-res-admin-texto);
+  border: 1px solid var(--c-ursinho-2);
   border-radius: var(--r-md);
   padding: var(--sp-sm) var(--sp-md);
   font-size: 0.875rem;
@@ -1115,22 +1142,68 @@ dialog::backdrop {
 }
 
 /* ============================================================
-   MELHORIA 2 — PRÉ-VISUALIZAÇÃO DE IMAGEM (admin)
+   MELHORIA 1 — UPLOAD E PRÉ-VISUALIZAÇÃO DE FOTO (admin)
    ============================================================ */
-.imagem-preview {
+.foto-preview-area {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
   margin-top: var(--sp-sm);
-}
-.imagem-preview__img {
-  max-width: 160px;
-  max-height: 120px;
+  padding: var(--sp-sm);
+  background: var(--c-fundo);
   border-radius: var(--r-md);
-  border: 1.5px solid #C8C2BA;
-  object-fit: cover;
+  border: 1px solid var(--c-borda);
 }
-.imagem-preview__erro {
+.foto-preview-img {
+  width: 96px;
+  height: 72px; /* Proporção 4:3 */
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-rosa-terroso);
+  background: var(--c-branco);
+}
+.foto-preview-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  align-items: flex-start;
+}
+.foto-preview-tamanho {
+  font-size: 0.8125rem;
+  color: var(--c-texto-sec);
+  font-weight: 600;
+}
+.btn--pequeno {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  min-height: 44px;
+}
+.erro-foto {
   font-size: 0.8125rem;
   color: var(--c-erro);
   font-weight: 600;
+  margin-top: var(--sp-xs);
+  line-height: 1.4;
+}
+
+/* Miniatura na lista admin */
+.card-admin__miniatura {
+  width: 56px;
+  height: 42px; /* Proporção 4:3 */
+  object-fit: cover;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-borda);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Aviso de link de buscador na lista admin */
+.selo--aviso-busca {
+  background: var(--c-res-admin-bg);
+  color: var(--c-erro);
+  border: 1px solid var(--c-rosa-terroso);
+  margin-top: var(--sp-xs);
+  display: inline-flex;
 }
 
 /* ============================================================
@@ -1142,7 +1215,7 @@ dialog::backdrop {
   gap: 3px;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--c-principal-dk);
+  color: var(--c-principal);
   text-decoration: none;
   margin-top: var(--sp-xs);
   border-bottom: 1px solid currentColor;
@@ -1150,7 +1223,7 @@ dialog::backdrop {
   padding-bottom: 1px;
   transition: color var(--dur-fast);
 }
-.card-admin__link-loja:hover { color: var(--c-principal); }
+.card-admin__link-loja:hover { color: var(--c-principal-dk); }
 .card-admin__link-loja:focus-visible {
   outline: 3px solid var(--c-principal);
   outline-offset: 2px;

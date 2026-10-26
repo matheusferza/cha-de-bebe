@@ -8,7 +8,7 @@ import {
   serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { db } from './firebase.js';
-import { formatarMoeda, mostrarToast, urlHttpsSegura, nomeDaLoja } from './ui.js';
+import { mostrarToast, urlHttpsSegura, nomeDaLoja, linkDeBuscador } from './ui.js';
 
 // ─── Configuração do evento ────────────────────────────────────────────────────
 // Edite aqui para personalizar o evento. Campos vazios não aparecem.
@@ -42,36 +42,36 @@ const btnReservaConfirmar = document.getElementById('reserva-confirmar');
 
 // ─── Renderiza o hero ─────────────────────────────────────────────────────────
 function renderizarHero() {
-  // SVG decorativo (nuvens + estrelas + lua)
+  // SVG decorativo (nuvens + estrelas + lua com a nova paleta)
   const svgDeco = `
     <svg aria-hidden="true" viewBox="0 0 800 180" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;opacity:0.35">
-      <!-- Nuvem 1 -->
-      <ellipse cx="80" cy="60" rx="55" ry="28" fill="#CFE3F1"/>
-      <ellipse cx="115" cy="45" rx="38" ry="22" fill="#CFE3F1"/>
-      <ellipse cx="45" cy="55" rx="30" ry="18" fill="#CFE3F1"/>
-      <!-- Nuvem 2 -->
-      <ellipse cx="680" cy="80" rx="60" ry="30" fill="#F3C9C4"/>
-      <ellipse cx="720" cy="62" rx="40" ry="22" fill="#F3C9C4"/>
-      <ellipse cx="645" cy="75" rx="32" ry="20" fill="#F3C9C4"/>
-      <!-- Lua -->
-      <path d="M740 20 A22 22 0 1 1 740 64 A14 14 0 1 0 740 20Z" fill="#F3C9C4"/>
-      <!-- Estrelas -->
-      <circle cx="200" cy="30" r="3" fill="#F3C9C4"/>
-      <circle cx="350" cy="15" r="2" fill="#CFE3F1"/>
-      <circle cx="500" cy="28" r="2.5" fill="#F3C9C4"/>
-      <circle cx="160" cy="80" r="2" fill="#CFE3F1"/>
-      <circle cx="590" cy="50" r="2" fill="#F3C9C4"/>
-      <circle cx="420" cy="60" r="1.5" fill="#CFE3F1"/>
+      <!-- Nuvem 1 (rosa suave) -->
+      <ellipse cx="80" cy="60" rx="55" ry="28" fill="#F5D2C7"/>
+      <ellipse cx="115" cy="45" rx="38" ry="22" fill="#F5D2C7"/>
+      <ellipse cx="45" cy="55" rx="30" ry="18" fill="#F5D2C7"/>
+      <!-- Nuvem 2 (rosa laço) -->
+      <ellipse cx="680" cy="80" rx="60" ry="30" fill="#ED7D7D"/>
+      <ellipse cx="720" cy="62" rx="40" ry="22" fill="#ED7D7D"/>
+      <ellipse cx="645" cy="75" rx="32" ry="20" fill="#ED7D7D"/>
+      <!-- Lua (rosa laço) -->
+      <path d="M740 20 A22 22 0 1 1 740 64 A14 14 0 1 0 740 20Z" fill="#ED7D7D"/>
+      <!-- Estrelas (rosa coral e suave) -->
+      <circle cx="200" cy="30" r="3" fill="#CB5054"/>
+      <circle cx="350" cy="15" r="2" fill="#F5D2C7"/>
+      <circle cx="500" cy="28" r="2.5" fill="#CB5054"/>
+      <circle cx="160" cy="80" r="2" fill="#F5D2C7"/>
+      <circle cx="590" cy="50" r="2" fill="#CB5054"/>
+      <circle cx="420" cy="60" r="1.5" fill="#F5D2C7"/>
       <!-- Estrelas pequenas (sparks) -->
-      <text x="285" y="45" font-size="16" fill="#F3C9C4" opacity="0.6">✦</text>
-      <text x="460" y="22" font-size="12" fill="#CFE3F1" opacity="0.6">✦</text>
-      <text x="630" y="35" font-size="10" fill="#F3C9C4" opacity="0.5">✦</text>
+      <text x="285" y="45" font-size="16" fill="#ED7D7D" opacity="0.6">✦</text>
+      <text x="460" y="22" font-size="12" fill="#F5D2C7" opacity="0.6">✦</text>
+      <text x="630" y="35" font-size="10" fill="#CB5054" opacity="0.5">✦</text>
     </svg>`;
 
-  // Onda divisora
+  // Onda divisora (termina na cor do fundo #FBE7DC)
   const svgOnda = `
     <svg viewBox="0 0 1440 54" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" aria-hidden="true">
-      <path d="M0,32 C240,56 480,8 720,32 C960,56 1200,8 1440,32 L1440,54 L0,54Z" fill="#FBF6EF"/>
+      <path d="M0,32 C240,56 480,8 720,32 C960,56 1200,8 1440,32 L1440,54 L0,54Z" fill="#FBE7DC"/>
     </svg>`;
 
   const hero = document.createElement('div');
@@ -148,12 +148,10 @@ function renderizarSkeletons(qtd = 6) {
     t.className = 'skeleton skeleton-card__titulo';
     const d = document.createElement('div');
     d.className = 'skeleton skeleton-card__desc';
-    const p = document.createElement('div');
-    p.className = 'skeleton skeleton-card__preco';
     const b = document.createElement('div');
     b.className = 'skeleton skeleton-card__btn';
 
-    corpo.append(t, d, p, b);
+    corpo.append(t, d, b);
     li.append(img, corpo);
     listaEl.appendChild(li);
   }
@@ -241,28 +239,54 @@ function desenhar(docs) {
     const midia = document.createElement('div');
     midia.className = 'card__midia';
 
-    // Imagem opcional (item 12)
+    // Imagem opcional (prioridade: imagemData -> imagemUrl legado -> emoji 🎁)
     let imagemCarregada = false;
-    if (p.imagemUrl && typeof p.imagemUrl === 'string' && p.imagemUrl.startsWith('https://')) {
+    const temImagemData =
+      typeof p.imagemData === 'string' &&
+      p.imagemData.startsWith('data:image/jpeg;base64,') &&
+      p.imagemData.length <= 250000;
+
+    if (temImagemData) {
       const img = document.createElement('img');
-      img.src = p.imagemUrl;
+      img.src = p.imagemData;
       img.alt = '';
       img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
+      img.decoding = 'async';
+      img.width = 800;
+      img.height = 600;
       img.className = 'card__imagem';
-      img.addEventListener('error', () => {
-        img.remove();
-        const emoji = document.createElement('span');
-        emoji.setAttribute('aria-hidden', 'true');
-        emoji.textContent = '🎁';
-        midia.appendChild(emoji);
-      });
       midia.appendChild(img);
       imagemCarregada = true;
+    } else if (p.imagemUrl && typeof p.imagemUrl === 'string') {
+      const urlLegada = urlHttpsSegura(p.imagemUrl);
+      if (urlLegada) {
+        const img = document.createElement('img');
+        img.src = urlLegada.href;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.width = 800;
+        img.height = 600;
+        img.referrerPolicy = 'no-referrer';
+        img.className = 'card__imagem';
+        img.addEventListener('error', () => {
+          img.remove();
+          if (!midia.querySelector('.card__emoji')) {
+            const emoji = document.createElement('span');
+            emoji.className = 'card__emoji';
+            emoji.setAttribute('aria-hidden', 'true');
+            emoji.textContent = '🎁';
+            midia.appendChild(emoji);
+          }
+        });
+        midia.appendChild(img);
+        imagemCarregada = true;
+      }
     }
 
     if (!imagemCarregada) {
       const emoji = document.createElement('span');
+      emoji.className = 'card__emoji';
       emoji.setAttribute('aria-hidden', 'true');
       emoji.textContent = '🎁';
       midia.appendChild(emoji);
@@ -300,16 +324,11 @@ function desenhar(docs) {
       corpo.append(titulo);
     }
 
-    // Preço em pill
-    const preco = document.createElement('span');
-    preco.className = 'card__preco';
-    preco.textContent = formatarMoeda(p.preco);
-    corpo.appendChild(preco);
 
-    // Link "Ver sugestão" (só em cartões disponíveis com linkLoja válido)
+    // Link "Ver sugestão" (só em cartões disponíveis com linkLoja válido que NÃO seja buscador)
     if (!reservado && p.linkLoja) {
       const urlLoja = urlHttpsSegura(p.linkLoja);
-      if (urlLoja) {
+      if (urlLoja && !linkDeBuscador(urlLoja)) {
         const linkSugestao = document.createElement('a');
         linkSugestao.href = urlLoja.href;
         linkSugestao.target = '_blank';

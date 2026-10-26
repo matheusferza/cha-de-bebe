@@ -15,7 +15,7 @@ import {
   updateDoc,
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { auth, db } from './firebase.js';
-import { formatarMoeda, mostrarToast, abrirConfirmacao, urlHttpsSegura, nomeDaLoja } from './ui.js';
+import { mostrarToast, abrirConfirmacao, urlHttpsSegura, nomeDaLoja, linkDeBuscador, prepararImagem } from './ui.js';
 
 // ─── Referências do DOM ───────────────────────────────────────────────────────
 const loginSecao  = document.getElementById('login');
@@ -31,43 +31,82 @@ const btnAdicionar = document.getElementById('btn-adicionar');
 const tituloFormPresente  = document.getElementById('titulo-form-presente');
 const btnCancelarEdicao   = document.getElementById('btn-cancelar-edicao');
 const avisoReserva        = document.getElementById('aviso-reserva');
-const imagemPreviewEl     = document.getElementById('imagem-preview');
-const inputImagemUrl      = document.getElementById('imagemUrl');
+const imagemArquivo       = document.getElementById('imagemArquivo');
+const fotoPreviewArea     = document.getElementById('foto-preview-area');
+const fotoPreviewImg      = document.getElementById('foto-preview-img');
+const fotoPreviewTamanho  = document.getElementById('foto-preview-tamanho');
+const btnRemoverFoto      = document.getElementById('btn-remover-foto');
+const erroFoto            = document.getElementById('erro-foto');
 
-// ─── Estado de edição ─────────────────────────────────────────────────────────
-let editandoId = null;       // id do documento em edição (null = modo adicionar)
-let cardEditando = null;     // referência ao card-admin destacado
+// ─── Estado de edição e foto ──────────────────────────────────────────────────
+let editandoId = null;            // id do documento em edição (null = modo adicionar)
+let cardEditando = null;          // referência ao card-admin destacado
+let estadoFoto = 'removida';      // 'mantida' | 'nova' | 'removida'
+let fotoAtualDataUrl = null;      // string data URL da foto atual
 
-// ─── Pré-visualização de imagem (debounce 400ms) ──────────────────────────────
-let _previewTimer = null;
-function atualizarPreviewImagem(valor) {
-  clearTimeout(_previewTimer);
-  _previewTimer = setTimeout(() => {
-    imagemPreviewEl.innerHTML = '';
-    const url = urlHttpsSegura(valor);
-    if (!url) {
-      imagemPreviewEl.hidden = true;
-      return;
-    }
-    const img = document.createElement('img');
-    img.src = url.href;
-    img.referrerPolicy = 'no-referrer';
-    img.alt = 'Pré-visualização da imagem';
-    img.className = 'imagem-preview__img';
-    img.addEventListener('error', () => {
-      imagemPreviewEl.innerHTML = '';
-      const aviso = document.createElement('p');
-      aviso.className = 'imagem-preview__erro';
-      aviso.textContent = 'Não foi possível carregar esta imagem. Confira se é o endereço direto da imagem.';
-      imagemPreviewEl.appendChild(aviso);
-      imagemPreviewEl.hidden = false;
-    });
-    imagemPreviewEl.appendChild(img);
-    imagemPreviewEl.hidden = false;
-  }, 400);
+const MENSAGENS_ERRO_FOTO = {
+  tipo: 'Escolha um arquivo de imagem (JPG, PNG ou WebP).',
+  'arquivo-grande': 'Esta imagem é grande demais (máximo 15 MB).',
+  decodificar: 'Não foi possível abrir esta imagem. Tente outro arquivo (JPG, PNG ou WebP).',
+  'imagem-grande': 'Não foi possível reduzir esta imagem o suficiente. Tente outra foto.',
+};
+
+function formatarTamanhoDataUrl(dataUrl) {
+  if (!dataUrl) return '';
+  const idx = dataUrl.indexOf(',');
+  const b64Len = idx >= 0 ? dataUrl.length - idx - 1 : dataUrl.length;
+  const bytes = (b64Len * 3) / 4;
+  const kb = Math.round(bytes / 1024);
+  return '≈ ' + kb + ' KB';
 }
 
-inputImagemUrl.addEventListener('input', () => atualizarPreviewImagem(inputImagemUrl.value));
+function exibirPreviewFoto(dataUrl) {
+  if (!dataUrl) {
+    fotoPreviewArea.hidden = true;
+    fotoPreviewImg.removeAttribute('src');
+    fotoPreviewTamanho.textContent = '';
+    btnRemoverFoto.hidden = true;
+    return;
+  }
+  fotoPreviewImg.src = dataUrl;
+  fotoPreviewTamanho.textContent = formatarTamanhoDataUrl(dataUrl);
+  fotoPreviewArea.hidden = false;
+  btnRemoverFoto.hidden = false;
+}
+
+imagemArquivo.addEventListener('change', async (e) => {
+  const arquivo = e.target.files && e.target.files[0];
+  if (!arquivo) return; // cancelou janela de seleção, não mostra erro
+
+  erroFoto.textContent = '';
+  btnAdicionar.disabled = true;
+  btnAdicionar.textContent = 'Processando foto...';
+
+  try {
+    const dataUrl = await prepararImagem(arquivo);
+    fotoAtualDataUrl = dataUrl;
+    estadoFoto = 'nova';
+    exibirPreviewFoto(dataUrl);
+  } catch (erro) {
+    const chave = erro && erro.message;
+    erroFoto.textContent = MENSAGENS_ERRO_FOTO[chave] || 'Não foi possível processar esta imagem.';
+    imagemArquivo.value = '';
+    if (estadoFoto !== 'mantida') {
+      exibirPreviewFoto(null);
+    }
+  } finally {
+    btnAdicionar.disabled = false;
+    btnAdicionar.textContent = editandoId ? 'Salvar alterações' : 'Adicionar presente';
+  }
+});
+
+btnRemoverFoto.addEventListener('click', () => {
+  estadoFoto = 'removida';
+  fotoAtualDataUrl = null;
+  imagemArquivo.value = '';
+  erroFoto.textContent = '';
+  exibirPreviewFoto(null);
+});
 
 // ─── Helpers de modo de edição ────────────────────────────────────────────────
 function entrarModoEdicao(id, dados) {
@@ -79,8 +118,6 @@ function entrarModoEdicao(id, dados) {
   // Preenche os campos
   document.getElementById('nome').value      = dados.nome || '';
   document.getElementById('descricao').value = dados.descricao || '';
-  document.getElementById('preco').value     = dados.preco !== undefined ? dados.preco : '';
-  inputImagemUrl.value = dados.imagemUrl || '';
   document.getElementById('linkLoja').value  = dados.linkLoja || '';
 
   // Aviso se reservado
@@ -92,8 +129,18 @@ function entrarModoEdicao(id, dados) {
     avisoReserva.textContent = '';
   }
 
-  // Pré-visualização imagem atual
-  atualizarPreviewImagem(dados.imagemUrl || '');
+  // Foto atual
+  imagemArquivo.value = '';
+  erroFoto.textContent = '';
+  if (dados.imagemData) {
+    fotoAtualDataUrl = dados.imagemData;
+    estadoFoto = 'mantida';
+    exibirPreviewFoto(dados.imagemData);
+  } else {
+    fotoAtualDataUrl = null;
+    estadoFoto = 'removida';
+    exibirPreviewFoto(null);
+  }
 
   erroForm.textContent = '';
 
@@ -117,8 +164,11 @@ function sairModoEdicao() {
   avisoReserva.textContent = '';
   erroForm.textContent = '';
   formPresente.reset();
-  imagemPreviewEl.innerHTML = '';
-  imagemPreviewEl.hidden = true;
+  imagemArquivo.value = '';
+  erroFoto.textContent = '';
+  fotoAtualDataUrl = null;
+  estadoFoto = 'removida';
+  exibirPreviewFoto(null);
 
   if (cardEditando) {
     cardEditando.classList.remove('card-admin--editando');
@@ -203,8 +253,6 @@ formPresente.addEventListener('submit', async (e) => {
 
   const nome         = document.getElementById('nome').value.trim();
   const descricao    = document.getElementById('descricao').value.trim();
-  const preco        = Number(document.getElementById('preco').value);
-  const imagemUrlRaw = inputImagemUrl.value.trim();
   const linkLojaRaw  = document.getElementById('linkLoja').value.trim();
 
   // Validações comuns
@@ -213,20 +261,19 @@ formPresente.addEventListener('submit', async (e) => {
     document.getElementById('nome').focus();
     return;
   }
-  if (Number.isNaN(preco) || preco < 0) {
-    erroForm.textContent = 'Informe um preço válido (0 ou maior).';
-    document.getElementById('preco').focus();
-    return;
-  }
-  if (imagemUrlRaw && !urlHttpsSegura(imagemUrlRaw)) {
-    erroForm.textContent = 'O link da imagem deve ser um endereço https:// válido.';
-    inputImagemUrl.focus();
-    return;
-  }
-  if (linkLojaRaw && !urlHttpsSegura(linkLojaRaw)) {
-    erroForm.textContent = 'O link de sugestão deve ser um endereço https:// válido.';
-    document.getElementById('linkLoja').focus();
-    return;
+  let urlLoja = null;
+  if (linkLojaRaw) {
+    urlLoja = urlHttpsSegura(linkLojaRaw);
+    if (!urlLoja) {
+      erroForm.textContent = 'O link de sugestão deve ser um endereço https:// válido.';
+      document.getElementById('linkLoja').focus();
+      return;
+    }
+    if (linkDeBuscador(urlLoja)) {
+      erroForm.textContent = 'Este parece ser um link de busca (Google, Yahoo, Bing...). Abra a página do produto na loja e copie o endereço da barra do navegador.';
+      document.getElementById('linkLoja').focus();
+      return;
+    }
   }
 
   // ── MODO EDIÇÃO ──
@@ -235,14 +282,18 @@ formPresente.addEventListener('submit', async (e) => {
     btnAdicionar.textContent = 'Salvando...';
     btnCancelarEdicao.disabled = true;
 
-    // Monta payload — NUNCA inclui reservadoPor nem reservadoEm
-    const payload = { nome, descricao, preco };
-
-    const urlImagem = urlHttpsSegura(imagemUrlRaw);
-    payload.imagemUrl = urlImagem ? urlImagem.href : deleteField();
-
-    const urlLoja = urlHttpsSegura(linkLojaRaw);
+    // Monta payload — NUNCA inclui reservadoPor nem reservadoEm; preserva campos legados intactos
+    const payload = { nome, descricao };
     payload.linkLoja = urlLoja ? urlLoja.href : deleteField();
+
+    if (estadoFoto === 'nova') {
+      payload.imagemData = fotoAtualDataUrl;
+      payload.imagemUrl = deleteField();
+    } else if (estadoFoto === 'removida') {
+      payload.imagemData = deleteField();
+      payload.imagemUrl = deleteField();
+    }
+    // 'mantida': NÃO toca em imagemData nem em imagemUrl
 
     try {
       await updateDoc(doc(db, 'presentes', editandoId), payload);
@@ -262,24 +313,21 @@ formPresente.addEventListener('submit', async (e) => {
   btnAdicionar.disabled = true;
   btnAdicionar.textContent = 'Adicionando...';
 
-  // Monta o objeto a gravar; só inclui campos opcionais se preenchidos
   const dados = {
     nome,
     descricao,
-    preco,
     reservadoPor: null,
     reservadoEm: null,
   };
-  const urlImagem = urlHttpsSegura(imagemUrlRaw);
-  if (urlImagem) dados.imagemUrl = urlImagem.href;
-  const urlLoja = urlHttpsSegura(linkLojaRaw);
   if (urlLoja) dados.linkLoja = urlLoja.href;
+  if (estadoFoto === 'nova' && fotoAtualDataUrl) {
+    dados.imagemData = fotoAtualDataUrl;
+  }
 
   try {
     await addDoc(collection(db, 'presentes'), dados);
     formPresente.reset();
-    imagemPreviewEl.innerHTML = '';
-    imagemPreviewEl.hidden = true;
+    sairModoEdicao();
     mostrarToast('Presente "' + nome + '" adicionado com sucesso!', 'sucesso');
   } catch (_erro) {
     mostrarToast('Não foi possível adicionar. Verifique se você está logado.', 'erro');
@@ -351,10 +399,6 @@ function escutarLista() {
           nome.appendChild(tag);
         }
 
-        const detalhe = document.createElement('p');
-        detalhe.className = 'card-admin__detalhe';
-        detalhe.textContent = formatarMoeda(p.preco);
-
         // Selo de situação
         const selo = document.createElement('span');
         if (p.reservadoPor) {
@@ -375,23 +419,30 @@ function escutarLista() {
           selo.append(icone, texto);
         }
 
-        // Link da loja (admin confere)
+        // Link da loja ou selo de aviso se for link de busca
         const urlLojaObj = p.linkLoja ? urlHttpsSegura(p.linkLoja) : null;
         if (urlLojaObj) {
-          const linkLoja = document.createElement('a');
-          linkLoja.href = urlLojaObj.href;
-          linkLoja.target = '_blank';
-          linkLoja.rel = 'noopener noreferrer nofollow';
-          linkLoja.className = 'card-admin__link-loja';
-          const textoLink = document.createElement('span');
-          textoLink.textContent = 'Abrir link ↗';
-          const srOnly = document.createElement('span');
-          srOnly.className = 'sr-only';
-          srOnly.textContent = ' (abre em nova aba)';
-          linkLoja.append(textoLink, srOnly);
-          info.append(nome, detalhe, selo, linkLoja);
+          if (linkDeBuscador(urlLojaObj)) {
+            const avisoBusca = document.createElement('span');
+            avisoBusca.className = 'selo selo--aviso-busca';
+            avisoBusca.textContent = '⚠️ Link de busca: corrigir';
+            info.append(nome, selo, avisoBusca);
+          } else {
+            const linkLoja = document.createElement('a');
+            linkLoja.href = urlLojaObj.href;
+            linkLoja.target = '_blank';
+            linkLoja.rel = 'noopener noreferrer nofollow';
+            linkLoja.className = 'card-admin__link-loja';
+            const textoLink = document.createElement('span');
+            textoLink.textContent = 'Abrir link ↗';
+            const srOnly = document.createElement('span');
+            srOnly.className = 'sr-only';
+            srOnly.textContent = ' (abre em nova aba)';
+            linkLoja.append(textoLink, srOnly);
+            info.append(nome, selo, linkLoja);
+          }
         } else {
-          info.append(nome, detalhe, selo);
+          info.append(nome, selo);
         }
 
         // ── Ações ──
@@ -422,7 +473,16 @@ function escutarLista() {
         btnExcluir.addEventListener('click', () => excluirPresente(d.id, p.nome, btnExcluir));
         acoes.appendChild(btnExcluir);
 
-        card.append(info, acoes);
+        // Miniatura se tiver imagemData válida
+        if (typeof p.imagemData === 'string' && p.imagemData.startsWith('data:image/jpeg;base64,')) {
+          const mini = document.createElement('img');
+          mini.src = p.imagemData;
+          mini.alt = '';
+          mini.className = 'card-admin__miniatura';
+          card.append(mini, info, acoes);
+        } else {
+          card.append(info, acoes);
+        }
         listaAdmin.appendChild(card);
       });
     },

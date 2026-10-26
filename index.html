@@ -1,89 +1,76 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#2F7D5B" />
-    <meta name="description" content="Lista de presentes do chá de bebê da Ayla. Escolha um presente e reserve com seu nome!" />
-    <meta property="og:title" content="Chá de Bebê da Ayla — Lista de Presentes" />
-    <meta property="og:description" content="Escolha um presente e reserve com seu nome para o chá de bebê da Ayla!" />
-    <meta property="og:type" content="website" />
-    <!-- Favicon via emoji data URI (evita 404) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Nunito:wght@400;500;600;700&display=swap"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <title>Lista de Presentes</title>
-  </head>
-  <body>
-    <!-- Hero injetado pelo app.js -->
-    <header class="site-header" id="site-header"></header>
 
-    <main>
-      <div class="container">
-        <!-- Progresso -->
-        <div class="progresso-wrapper" id="progresso-wrapper" hidden>
-          <div class="progresso-texto">
-            <span id="progresso-label">0 de 0 presentes escolhidos</span>
-            <span id="progresso-pct">0%</span>
-          </div>
-          <progress
-            id="progresso-barra"
-            class="progresso-barra"
-            role="progressbar"
-            aria-valuenow="0"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            value="0"
-            max="100"
-          ></progress>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#FBE7DC" />
+  <meta name="description"
+    content="Lista de presentes do chá de bebê da Ayla. Escolha um presente e reserve com seu nome!" />
+  <meta property="og:title" content="Chá de Bebê da Ayla — Lista de Presentes" />
+  <meta property="og:description" content="Escolha um presente e reserve com seu nome para o chá de bebê da Ayla!" />
+  <meta property="og:type" content="website" />
+  <!-- Favicon via emoji data URI (evita 404) -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Nunito:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Lista de Presentes</title>
+</head>
+
+<body>
+  <!-- Hero injetado pelo app.js -->
+  <header class="site-header" id="site-header"></header>
+
+  <main>
+    <div class="container">
+      <!-- Progresso -->
+      <div class="progresso-wrapper" id="progresso-wrapper" hidden>
+        <div class="progresso-texto">
+          <span id="progresso-label">0 de 0 presentes escolhidos</span>
+          <span id="progresso-pct">0%</span>
         </div>
-
-        <!-- Controles -->
-        <div class="controles" id="controles" hidden>
-          <label class="controles__toggle" for="toggle-disponiveis">
-            <input type="checkbox" id="toggle-disponiveis" />
-            <span>Mostrar só disponíveis</span>
-          </label>
-        </div>
-
-        <!-- Lista de presentes -->
-        <ul id="lista" class="grade" aria-label="Lista de presentes"></ul>
+        <progress id="progresso-barra" class="progresso-barra" role="progressbar" aria-valuenow="0" aria-valuemin="0"
+          aria-valuemax="100" value="0" max="100"></progress>
       </div>
-    </main>
 
-    <footer class="site-footer">
-      <p>Feito com muito carinho 💚 · Para os amigos e família da Ayla</p>
-    </footer>
-
-    <!-- Dialog de reserva -->
-    <dialog id="dialog-reserva" class="dialog-reserva" aria-labelledby="dialog-reserva-titulo">
-      <h2 class="dialog-reserva__titulo" id="dialog-reserva-titulo">Reservar presente</h2>
-      <div class="dialog-reserva__campo">
-        <label class="dialog-reserva__label" for="reserva-nome">Seu nome</label>
-        <input
-          class="dialog-reserva__input"
-          type="text"
-          id="reserva-nome"
-          name="nome"
-          autocomplete="name"
-          maxlength="60"
-          placeholder="Como você se chama?"
-          required
-        />
-        <p class="dialog-reserva__erro" id="reserva-erro" role="alert" aria-live="assertive"></p>
+      <!-- Controles -->
+      <div class="controles" id="controles" hidden>
+        <label class="controles__toggle" for="toggle-disponiveis">
+          <input type="checkbox" id="toggle-disponiveis" />
+          <span>Mostrar só disponíveis</span>
+        </label>
       </div>
-      <div class="dialog-reserva__acoes">
-        <button class="btn btn--secundario" id="reserva-cancelar" type="button">Cancelar</button>
-        <button class="btn btn--principal" id="reserva-confirmar" type="button">Confirmar reserva</button>
-      </div>
-    </dialog>
 
-    <script type="module" src="app.js"></script>
-  </body>
+      <!-- Lista de presentes -->
+      <ul id="lista" class="grade" aria-label="Lista de presentes"></ul>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Feito com muito carinho 🩷 · Para os amigos e família da Ayla</p>
+  </footer>
+
+  <!-- Dialog de reserva -->
+  <dialog id="dialog-reserva" class="dialog-reserva" aria-labelledby="dialog-reserva-titulo">
+    <h2 class="dialog-reserva__titulo" id="dialog-reserva-titulo">Reservar presente</h2>
+    <div class="dialog-reserva__campo">
+      <label class="dialog-reserva__label" for="reserva-nome">Seu nome</label>
+      <input class="dialog-reserva__input" type="text" id="reserva-nome" name="nome" autocomplete="name" maxlength="60"
+        placeholder="Como você se chama?" required />
+      <p class="dialog-reserva__erro" id="reserva-erro" role="alert" aria-live="assertive"></p>
+    </div>
+    <div class="dialog-reserva__acoes">
+      <button class="btn btn--secundario" id="reserva-cancelar" type="button">Cancelar</button>
+      <button class="btn btn--principal" id="reserva-confirmar" type="button">Confirmar reserva</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+
 </html>
