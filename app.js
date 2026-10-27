@@ -20,28 +20,52 @@ const EVENTO = {
   mensagem: '', // ex: 'Sua presença é o nosso maior presente!'
 };
 
+const PIX = {
+  titulo: 'Prefere presentear com um Pix?',
+  texto: 'Escaneie o QR Code com o app do seu banco ou, se estiver no celular, toque em "Copiar código Pix" e cole em Pix Copia e Cola. O valor é livre.',
+  textoSemQr: 'Toque em "Copiar código Pix" e cole em Pix Copia e Cola no app do seu banco. O valor é livre.',
+  aviso: 'Ao pagar, confira o nome do recebedor no app do seu banco.',
+  tituloDados: 'Dados do recebedor',
+  codigo: '00020126580014BR.GOV.BCB.PIX01364e6c0e2d-7503-4031-9835-66203ce619ec5204000053039865802BR5925Matheus Ferreira de Souza6009SAO PAULO62140510u67TQRNr7I63048CE4',
+  chave: '4e6c0e2d-7503-4031-9835-66203ce619ec',
+  tipoChave: 'Chave aleatória',
+  nome: 'Matheus Ferreira de Souza Benini',
+  banco: 'Nubank (Nu Pagamentos S.A.)'
+};
+
 // ─── Atualiza title da página ─────────────────────────────────────────────────
 document.title = EVENTO.titulo + ' — Lista de Presentes';
 
 // ─── Referências do DOM ───────────────────────────────────────────────────────
-const headerEl          = document.getElementById('site-header');
-const listaEl           = document.getElementById('lista');
-const progressoWrapper  = document.getElementById('progresso-wrapper');
-const progressoLabel    = document.getElementById('progresso-label');
-const progressoPct      = document.getElementById('progresso-pct');
-const progressoBarra    = document.getElementById('progresso-barra');
-const controlesEl       = document.getElementById('controles');
+const headerEl = document.getElementById('site-header');
+const listaEl = document.getElementById('lista');
+const progressoWrapper = document.getElementById('progresso-wrapper');
+const progressoLabel = document.getElementById('progresso-label');
+const progressoPct = document.getElementById('progresso-pct');
+const progressoBarra = document.getElementById('progresso-barra');
+const controlesEl = document.getElementById('controles');
 const toggleDisponiveis = document.getElementById('toggle-disponiveis');
 
-const dialogReserva     = document.getElementById('dialog-reserva');
-const dialogTitulo      = document.getElementById('dialog-reserva-titulo');
+const pixSecao = document.getElementById('pix');
+const pixQrImg = document.getElementById('pix-qr');
+const pixBtnCopiar = document.getElementById('pix-btn-copiar');
+const pixDetalhes = document.getElementById('pix-detalhes');
+const pixTextarea = document.getElementById('pix-codigo');
+const pixTituloEl = document.getElementById('pix-titulo');
+const pixTextoEl = document.getElementById('pix-texto');
+const pixAvisoEl = document.getElementById('pix-aviso');
+const pixBtnChave = document.getElementById('pix-btn-chave');
+const pixDadosEl = document.getElementById('pix-dados');
+
+const dialogReserva = document.getElementById('dialog-reserva');
+const dialogTitulo = document.getElementById('dialog-reserva-titulo');
 const dialogReservaInfo = document.getElementById('reserva-info');
-const reservaCampoQtd   = document.getElementById('reserva-campo-qtd');
-const inputReservaQtd   = document.getElementById('reserva-quantidade');
-const reservaQtdAjuda   = document.getElementById('reserva-qtd-ajuda');
-const inputReservaNome  = document.getElementById('reserva-nome');
-const erroReserva       = document.getElementById('reserva-erro');
-const btnReservaCancelar  = document.getElementById('reserva-cancelar');
+const reservaCampoQtd = document.getElementById('reserva-campo-qtd');
+const inputReservaQtd = document.getElementById('reserva-quantidade');
+const reservaQtdAjuda = document.getElementById('reserva-qtd-ajuda');
+const inputReservaNome = document.getElementById('reserva-nome');
+const erroReserva = document.getElementById('reserva-erro');
+const btnReservaCancelar = document.getElementById('reserva-cancelar');
 const btnReservaConfirmar = document.getElementById('reserva-confirmar');
 
 // ─── Renderiza o hero ─────────────────────────────────────────────────────────
@@ -133,6 +157,168 @@ function renderizarHero() {
 }
 
 renderizarHero();
+inicializarPix();
+
+// ─── Seção Pix ────────────────────────────────────────────────────────────────
+function inicializarPix() {
+  if (!pixSecao || !pixQrImg) return;
+
+  if (pixTituloEl) pixTituloEl.textContent = PIX.titulo;
+  if (pixAvisoEl) pixAvisoEl.textContent = PIX.aviso;
+
+  const temCodigo = typeof PIX.codigo === 'string' && PIX.codigo.trim().length > 0;
+  if (temCodigo) {
+    if (pixTextarea) pixTextarea.value = PIX.codigo;
+    if (pixBtnCopiar) pixBtnCopiar.hidden = false;
+    if (pixDetalhes) pixDetalhes.hidden = false;
+  } else {
+    if (pixBtnCopiar) pixBtnCopiar.hidden = true;
+    if (pixDetalhes) pixDetalhes.hidden = true;
+  }
+
+  function qrCarregou() {
+    return pixQrImg.complete && pixQrImg.naturalWidth > 0;
+  }
+
+  function revelarComSucesso() {
+    pixQrImg.hidden = false;
+    if (pixTextoEl) pixTextoEl.textContent = PIX.texto;
+    pixSecao.hidden = false;
+  }
+
+  function tratarErroImagem() {
+    pixQrImg.hidden = true;
+    console.warn('pix-qr.png não carregou');
+    if (temCodigo) {
+      if (pixTextoEl) pixTextoEl.textContent = PIX.textoSemQr || PIX.texto;
+      pixSecao.hidden = false;
+    } else {
+      pixSecao.hidden = true;
+    }
+  }
+
+  if (qrCarregou()) {
+    revelarComSucesso();
+  } else if (pixQrImg.complete && pixQrImg.naturalWidth === 0) {
+    tratarErroImagem();
+  } else {
+    pixQrImg.addEventListener('load', revelarComSucesso, { once: true });
+    pixQrImg.addEventListener('error', tratarErroImagem, { once: true });
+  }
+
+  if (pixBtnCopiar && temCodigo) {
+    pixBtnCopiar.addEventListener('click', () => copiarTexto(PIX.codigo, 'Código Pix copiado!', pixTextarea, pixDetalhes));
+  }
+
+  // ── Bloco de dados do recebedor ──────────────────────────────
+  renderizarDadosPix();
+}
+
+// ─── Utilitário: copiar texto ────────────────────────────────────────────────
+async function copiarTexto(texto, mensagemSucesso, textareaFallback, detalhesEl) {
+  if (!texto) return;
+  let copiado = false;
+
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      await navigator.clipboard.writeText(texto);
+      copiado = true;
+    } catch (_e) {
+      copiado = false;
+    }
+  }
+
+  if (!copiado && textareaFallback) {
+    try {
+      const estavaFechado = detalhesEl && !detalhesEl.open;
+      if (estavaFechado) detalhesEl.open = true;
+      textareaFallback.focus();
+      textareaFallback.select();
+      textareaFallback.setSelectionRange(0, texto.length);
+      copiado = document.execCommand('copy');
+      if (estavaFechado && copiado) detalhesEl.open = false;
+    } catch (_e) {
+      copiado = false;
+    }
+  }
+
+  if (copiado) {
+    mostrarToast(mensagemSucesso, 'sucesso');
+  } else {
+    mostrarToast('Não foi possível copiar. Selecione o texto e copie manualmente.', 'erro');
+  }
+}
+
+// ─── Renderiza bloco de dados do recebedor ────────────────────────────────────
+function renderizarDadosPix() {
+  if (!pixDadosEl) return;
+
+  const temChave = PIX.chave && PIX.chave.trim().length > 0;
+  const temNome = PIX.nome && PIX.nome.trim().length > 0;
+  const temBanco = PIX.banco && PIX.banco.trim().length > 0;
+  const colDadosEl = document.getElementById('pix-col-dados');
+  const subtituloEl = document.getElementById('pix-subtitulo');
+
+  if (!temChave && !temNome && !temBanco) {
+    pixDadosEl.hidden = true;
+    if (colDadosEl) colDadosEl.hidden = true;
+    if (pixSecao) pixSecao.classList.add('pix--uma-coluna');
+    return;
+  }
+
+  pixDadosEl.hidden = false;
+  if (colDadosEl) colDadosEl.hidden = false;
+  if (pixSecao) pixSecao.classList.remove('pix--uma-coluna');
+
+  // Subtítulo da coluna de dados
+  if (subtituloEl) subtituloEl.textContent = PIX.tituloDados || '';
+
+  // Linha da chave
+  const linhaChave = document.getElementById('pix-dados-chave');
+  if (linhaChave) {
+    if (temChave) {
+      linhaChave.hidden = false;
+      const dt = linhaChave.querySelector('dt');
+      if (dt) dt.textContent = PIX.tipoChave || 'Chave Pix';
+      const span = document.getElementById('pix-chave-valor');
+      if (span) span.textContent = PIX.chave;
+    } else {
+      linhaChave.hidden = true;
+    }
+  }
+
+  // Linha do nome
+  const linhaNome = document.getElementById('pix-dados-nome');
+  if (linhaNome) {
+    if (temNome) {
+      linhaNome.hidden = false;
+      const dd = linhaNome.querySelector('dd');
+      if (dd) dd.textContent = PIX.nome;
+    } else {
+      linhaNome.hidden = true;
+    }
+  }
+
+  // Linha do banco
+  const linhaBanco = document.getElementById('pix-dados-banco');
+  if (linhaBanco) {
+    if (temBanco) {
+      linhaBanco.hidden = false;
+      const dd = linhaBanco.querySelector('dd');
+      if (dd) dd.textContent = PIX.banco;
+    } else {
+      linhaBanco.hidden = true;
+    }
+  }
+
+  // Botão copiar chave
+  if (pixBtnChave && temChave) {
+    pixBtnChave.hidden = false;
+    pixBtnChave.addEventListener('click', () => copiarTexto(PIX.chave, 'Chave Pix copiada!'));
+  } else if (pixBtnChave) {
+    pixBtnChave.hidden = true;
+  }
+}
 
 // ─── Skeletons de carregamento ────────────────────────────────────────────────
 function renderizarSkeletons(qtd = 6) {
@@ -164,8 +350,8 @@ function renderizarSkeletons(qtd = 6) {
 renderizarSkeletons();
 
 // ─── Controle de estado ────────────────────────────────────────────────────────
-let todosOsDocs   = [];
-let primeiraVez   = true;
+let todosOsDocs = [];
+let primeiraVez = true;
 let idsRendizados = new Set(); // para controlar animação de entrada
 
 // ─── Filtro e ordenação ───────────────────────────────────────────────────────
@@ -191,14 +377,14 @@ toggleDisponiveis.addEventListener('change', () => desenhar(docsFiltradosOrdenad
 
 // ─── Atualiza barra de progresso ─────────────────────────────────────────────
 function atualizarProgresso(docs) {
-  const total     = docs.length;
+  const total = docs.length;
   const reservados = docs.filter((d) => obterInfoDoacoes(d.data()).reservado).length;
-  const pct       = total > 0 ? Math.round((reservados / total) * 100) : 0;
+  const pct = total > 0 ? Math.round((reservados / total) * 100) : 0;
 
   progressoLabel.textContent = `${reservados} de ${total} presente${total !== 1 ? 's' : ''} já escolhido${reservados !== 1 ? 's' : ''}`;
-  progressoPct.textContent   = pct + '%';
-  progressoBarra.value       = pct;
-  progressoBarra.max         = 100;
+  progressoPct.textContent = pct + '%';
+  progressoBarra.value = pct;
+  progressoBarra.max = 100;
   progressoBarra.setAttribute('aria-valuenow', pct);
   progressoBarra.setAttribute('aria-valuemax', 100);
 }
@@ -407,20 +593,20 @@ function desenhar(docs) {
 }
 
 // ─── Dialog de reserva ────────────────────────────────────────────────────────
-let idPresente        = null;
+let idPresente = null;
 let infoAtualPresente = null;
-let botaoOrigem       = null;
+let botaoOrigem = null;
 
 function abrirDialogReserva(id, nomePresente, info, btnOrigem) {
-  idPresente        = id;
+  idPresente = id;
   infoAtualPresente = info;
-  botaoOrigem       = btnOrigem;
+  botaoOrigem = btnOrigem;
 
-  dialogTitulo.textContent  = 'Presentear: ' + nomePresente;
-  inputReservaNome.value    = '';
-  erroReserva.textContent   = '';
+  dialogTitulo.textContent = 'Presentear: ' + nomePresente;
+  inputReservaNome.value = '';
+  erroReserva.textContent = '';
   btnReservaConfirmar.disabled = false;
-  btnReservaCancelar.disabled  = false;
+  btnReservaCancelar.disabled = false;
   btnReservaConfirmar.textContent = 'Confirmar reserva';
 
   if (info && info.quantidadeTotal > 1) {
@@ -447,8 +633,8 @@ function abrirDialogReserva(id, nomePresente, info, btnOrigem) {
 function fecharDialogReserva() {
   dialogReserva.close();
   if (botaoOrigem) botaoOrigem.focus();
-  botaoOrigem       = null;
-  idPresente        = null;
+  botaoOrigem = null;
+  idPresente = null;
   infoAtualPresente = null;
 }
 
@@ -462,8 +648,8 @@ dialogReserva.addEventListener('click', (e) => {
 // Fechar com ESC (nativo do <dialog>, mas devolvemos o foco)
 dialogReserva.addEventListener('cancel', () => {
   if (botaoOrigem) botaoOrigem.focus();
-  botaoOrigem       = null;
-  idPresente        = null;
+  botaoOrigem = null;
+  idPresente = null;
   infoAtualPresente = null;
 });
 
@@ -500,7 +686,7 @@ btnReservaConfirmar.addEventListener('click', async () => {
 
   erroReserva.textContent = '';
   btnReservaConfirmar.disabled = true;
-  btnReservaCancelar.disabled  = true;
+  btnReservaCancelar.disabled = true;
   btnReservaConfirmar.textContent = 'Reservando...';
 
   const ref = doc(db, 'presentes', idPresente);
@@ -583,14 +769,14 @@ onSnapshot(
       listaEl.appendChild(msg);
 
       progressoWrapper.hidden = true;
-      controlesEl.hidden      = true;
+      controlesEl.hidden = true;
       primeiraVez = false;
       return;
     }
 
     atualizarProgresso(todosOsDocs);
     progressoWrapper.hidden = false;
-    controlesEl.hidden      = false;
+    controlesEl.hidden = false;
 
     desenhar(docsFiltradosOrdenados());
 
@@ -625,6 +811,6 @@ onSnapshot(
     listaEl.appendChild(msg);
 
     progressoWrapper.hidden = true;
-    controlesEl.hidden      = true;
+    controlesEl.hidden = true;
   },
 );

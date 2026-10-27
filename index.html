@@ -10,6 +10,7 @@
   <meta property="og:title" content="Chá de Bebê da Ayla — Lista de Presentes" />
   <meta property="og:description" content="Escolha um presente e reserve com seu nome para o chá de bebê da Ayla!" />
   <meta property="og:type" content="website" />
+  <meta name="robots" content="noindex, nofollow" />
   <!-- Favicon via emoji data URI (evita 404) -->
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍼</text></svg>" />
@@ -48,6 +49,56 @@
 
       <!-- Lista de presentes -->
       <ul id="lista" class="grade" aria-label="Lista de presentes"></ul>
+
+      <!-- Seção Pix -->
+      <section id="pix" class="pix" aria-labelledby="pix-titulo" hidden>
+        <!-- Cabeçalho: título e texto, largura total -->
+        <div class="pix__cabecalho">
+          <h2 id="pix-titulo" class="pix__titulo"></h2>
+          <p id="pix-texto" class="pix__texto"></p>
+        </div>
+
+        <!-- Grade de duas colunas -->
+        <div class="pix__grade">
+          <!-- Coluna esquerda: QR + copiar -->
+          <div class="pix__col pix__col--qr">
+            <div class="pix__qr-wrapper">
+              <img id="pix-qr" src="pix-qr.png" width="720" height="720" alt="QR Code Pix para presentear com qualquer valor" decoding="async" />
+            </div>
+            <button type="button" id="pix-btn-copiar" class="btn btn--secundario btn--bloco pix__btn" hidden>Copiar código Pix</button>
+            <details id="pix-detalhes" class="pix__detalhes" hidden>
+              <summary class="pix__summary">Ver código para copiar</summary>
+              <label for="pix-codigo" class="sr-only">Código Pix Copia e Cola</label>
+              <textarea id="pix-codigo" class="pix__textarea" readonly rows="3" aria-label="Código Pix Copia e Cola"></textarea>
+            </details>
+          </div>
+
+          <!-- Coluna direita: dados do recebedor -->
+          <div id="pix-col-dados" class="pix__col pix__col--dados" hidden>
+            <h3 id="pix-subtitulo" class="pix__subtitulo"></h3>
+            <dl id="pix-dados" class="pix__dados" hidden>
+              <div id="pix-dados-chave" class="pix__dados-linha" hidden>
+                <dt></dt>
+                <dd class="pix__dados-chave-linha">
+                  <span id="pix-chave-valor" class="pix__chave"></span>
+                  <button type="button" id="pix-btn-chave" class="btn btn--secundario pix__btn-chave" hidden>Copiar chave</button>
+                </dd>
+              </div>
+              <div id="pix-dados-nome" class="pix__dados-linha" hidden>
+                <dt>Nome</dt>
+                <dd></dd>
+              </div>
+              <div id="pix-dados-banco" class="pix__dados-linha" hidden>
+                <dt>Banco</dt>
+                <dd></dd>
+              </div>
+            </dl>
+          </div>
+        </div><!-- /.pix__grade -->
+
+        <!-- Aviso: largura total, abaixo das colunas -->
+        <p id="pix-aviso" class="pix__aviso"></p>
+      </section>
     </div>
   </main>
 
